@@ -17,10 +17,6 @@ void DemoTool::OnOpen()
 {
 	logger::info("Demo Tool Opened");
 
-	_overlay._secondWindow = &_secondOverlay;
-	FUCK::RegisterWindow(&_overlay);
-	FUCK::RegisterWindow(&_secondOverlay);
-
 	if (_inputBuffer[0] == '\0') {
 		const char* ph = "$DEMO_InputPlaceholder"_T;
 		if (ph)
