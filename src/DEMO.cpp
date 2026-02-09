@@ -253,12 +253,19 @@ void DemoOverlay::Draw()
 	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_WindowFlags"_T);
+	FUCK::Text("$DEMO_WindowFlags_Desc"_T);
 	FUCK::Checkbox("$DEMO_Flag_Blur"_T, &_reqBlur, false, false);
+	FUCK::SetTooltip("$DEMO_FlagTip_Blur"_T);
 	FUCK::Checkbox("$DEMO_Flag_HideHUD"_T, &_reqHideHUD, false, false);
+	FUCK::SetTooltip("DEMO_FlagTip_HideHUD"_T);
 	FUCK::Checkbox("$DEMO_Flag_PauseHard"_T, &_reqPauseHard, false, false);
+	FUCK::SetTooltip("$DEMO_FlagTip_PauseHard"_T);
 	FUCK::Checkbox("$DEMO_Flag_PauseSoft"_T, &_reqPauseSoft, false, false);
+	FUCK::SetTooltip("$DEMO_FlagTip_PauseSoft"_T);
 	FUCK::Checkbox("$DEMO_Flag_CloseOnEsc"_T, &_reqCloseOnEsc, false, false);
+	FUCK::SetTooltip("$DEMO_FlagTip_CloseOnEsc"_T);
 	FUCK::Checkbox("$DEMO_Flag_CloseOnMenu"_T, &_reqCloseOnMenu, false, false);
+	FUCK::SetTooltip("$DEMO_FlagTip_CloseOnMenu"_T);
 
 	if (FUCK::Checkbox("$DEMO_Flag_PassInput"_T, &_reqPassInput, false, false)) {
 		if (_reqPassInput) {
@@ -269,10 +276,15 @@ void DemoOverlay::Draw()
 			}).detach();
 		}
 	}
+	FUCK::SetTooltip("$DEMO_PassInputTip"_T);
 	FUCK::Checkbox("$DEMO_Flag_BlockVanity"_T, &_reqBlockVanity, false, false);
+	FUCK::SetTooltip("$DEMO_FlagTip_BlockVanity"_T);
 	FUCK::Checkbox("$DEMO_Flag_NoBackground"_T, &_reqNoBackground, false, false);
+	FUCK::SetTooltip("$DEMO_FlagTip_NoBackground"_T);
 	FUCK::Checkbox("$DEMO_Flag_NoDecoration"_T, &_reqNoDecoration, false, false);
+	FUCK::SetTooltip("$DEMO_FlagTip_NoDecoration"_T);
 	FUCK::Checkbox("$DEMO_Flag_ExtendBorder"_T, &_reqExtendBorder, false, false);
+	FUCK::SetTooltip("$DEMO_FlagTip_ExtendBorder"_T);
 
 	FUCK::SeparatorThick();
 	FUCK::Spacing();
