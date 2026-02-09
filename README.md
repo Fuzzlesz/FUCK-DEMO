@@ -1,4 +1,4 @@
-# EditHUD.dll
+# FUCK-DEMO.dll
 
 ## Requirements
 * [CMake](https://cmake.org/)
