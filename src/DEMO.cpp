@@ -111,9 +111,10 @@ void DemoTool::LoadSettings()
 		_intVal = ini.GetLongValue("Widgets", "IntVal", _intVal);
 		_dragFloat = (float)ini.GetDoubleValue("Widgets", "DragFloat", _dragFloat);
 		_dragInt = ini.GetLongValue("Widgets", "DragInt", _dragInt);
-		const char* inputBuf = ini.GetValue("Widgets", "InputBuffer", _inputBuffer);
-		if (inputBuf)
+		const char* inputBuf = ini.GetValue("Widgets", "InputBuffer", nullptr);
+		if (inputBuf) {
 			strncpy_s(_inputBuffer, inputBuf, sizeof(_inputBuffer));
+		}
 
 		// Overlay
 		_overlay._windowPos.x = (float)ini.GetDoubleValue("Overlay", "X", _overlay._windowPos.x);
