@@ -52,6 +52,21 @@ void DemoTool::OnClose()
 
 bool DemoTool::OnAsyncInput(const void* inputEvent)
 {
+	if (_inputCaptured) {
+		std::uint32_t key = 0;
+		std::int32_t mod1 = -1, mod2 = -1;
+
+		auto result = FUCK::GetInputBind(inputEvent, &key, &mod1, &mod2);
+
+		if (result == BindResult::kBound) {
+			_lastPressedKey = key;
+
+			return true;
+		}
+
+		return true;
+	}
+
 	if (FUCK::UpdateManagedHotkey(inputEvent, _overlay._toggleHotkey)) {
 		return true;
 	}
@@ -63,7 +78,6 @@ bool DemoTool::OnAsyncInput(const void* inputEvent)
 
 	return false;
 }
-
 void DemoTool::Draw()
 {
 	if (!FUCK::GetInterface()) {
