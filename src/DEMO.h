@@ -8,7 +8,7 @@
 class SimpleOverlay : public IWindow
 {
 public:
-	const char*	Title() const override { return TRANSLATE("$DEMO_SecondOverlayTitle"); }
+	const char*	Title() const override { return TRANSLATE("$DEMO_SecondOverlayTitle"_T); }
 	void		Draw() override;
 	bool		IsOpen() const override { return _isOpen; }
 	void		SetOpen(bool a_open) override { _isOpen = a_open; }

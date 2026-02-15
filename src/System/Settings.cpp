@@ -27,7 +27,6 @@ void Settings::LoadINI(const wchar_t* a_defaultPath, const wchar_t* a_userPath, 
 	LoadINI(a_userPath, a_func);
 }
 
-// Updated: Removed 'bool a_generate'
 void Settings::Load(INIFunc a_func) const
 {
 	if (a_func) {

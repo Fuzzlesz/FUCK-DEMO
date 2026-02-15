@@ -74,6 +74,7 @@ bool DemoTool::OnAsyncInput(const void* inputEvent)
 
 	return false;
 }
+
 void DemoTool::Draw()
 {
 	if (!FUCK::GetInterface()) {

@@ -1,9 +1,6 @@
 #include "DEMO.h"
 #include "FUCK_API.h"
 
-// Alias for the FUCK_API.h inline implementation (which uses logger::info)
-namespace logger = SKSE::log;
-
 // The Global Instance
 DemoTool* g_DemoTool = nullptr;
 
