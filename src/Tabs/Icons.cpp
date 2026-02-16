@@ -1,7 +1,7 @@
 #include "DEMO.h"
 #include "System/IconsFontAwesome6.h"
 
-void DemoTool::DrawIconsTab()
+void DemoState::DrawIconsTab()
 {
 	if (!FUCK::BeginTabItem("$DEMO_TabIcons"_T)) {
 		return;

@@ -1,6 +1,6 @@
 #include "DEMO.h"
 
-void DemoTool::DrawGameControlTab()
+void DemoState::DrawGameControlTab()
 {
 	if (!FUCK::BeginTabItem("$DEMO_TabGameControl"_T)) {
 		return;

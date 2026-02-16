@@ -1,6 +1,6 @@
 #include "DEMO.h"
 
-void DemoTool::DrawLayoutStyleTab()
+void DemoState::DrawLayoutStyleTab()
 {
 	if (!FUCK::BeginTabItem("$DEMO_TabLayoutStyle"_T)) {
 		return;

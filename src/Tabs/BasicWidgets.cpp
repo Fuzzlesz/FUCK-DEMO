@@ -1,6 +1,6 @@
 #include "DEMO.h"
 
-void DemoTool::DrawBasicWidgetsTab()
+void DemoState::DrawBasicWidgetsTab()
 {
 	if (!FUCK::BeginTabItem("$DEMO_TabBasicWidgets"_T)) {
 		return;

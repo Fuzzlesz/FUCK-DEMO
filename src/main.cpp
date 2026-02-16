@@ -1,9 +1,6 @@
 #include "DEMO.h"
 #include "FUCK_API.h"
 
-// The Global Instance
-DemoTool* g_DemoTool = nullptr;
-
 // ==========================================
 // SKSE Setup & Logging
 // ==========================================
@@ -65,8 +62,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 			// Connection logic
 			if (FUCK::Connect()) {
 				SKSE::log::info("Connected to FUCK API");
-				g_DemoTool = new DemoTool();
-				FUCK::RegisterTool(g_DemoTool);
+				(void)DemoState::GetSingleton(); // Registration happens at top of DEMO.cpp
 				FUCK::LoadTranslation("FUCK-DEMO");
 				SKSE::log::info("FUCK-DEMO Registered.");
 			}

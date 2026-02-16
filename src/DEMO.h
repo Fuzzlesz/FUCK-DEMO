@@ -8,7 +8,7 @@
 class SimpleOverlay : public IWindow
 {
 public:
-	const char*	Title() const override { return TRANSLATE("$DEMO_SecondOverlayTitle"_T); }
+	const char*	Title() const override { return "$DEMO_SecondOverlayTitle"_T; }
 	void		Draw() override;
 	bool		IsOpen() const override { return _isOpen; }
 	void		SetOpen(bool a_open) override { _isOpen = a_open; }
@@ -45,7 +45,7 @@ class DemoOverlay : public IWindow
 {
 public:
 	// --- IWindow Interface Implementation ---
-	const char*	Title() const override { return TRANSLATE("$DEMO_OverlayTitleHint"); }
+	const char*	Title() const override { return "$DEMO_OverlayTitleHint"_T; }
 	void		Draw() override;
 	bool		IsOpen() const override { return _isOpen; }
 	void		SetOpen(bool a_open) override { _isOpen = a_open; }
@@ -83,33 +83,60 @@ private:
 	bool _reqNoDecoration = false;
 	bool _reqExtendBorder = false;
 
-	friend class DemoTool;
+	friend class DemoState;
 };
 
 // ==========================================
-// Demo Sidebar Tool
+// Demo State Manager & Tools
 // ==========================================
-class DemoTool : public ITool, public REX::Singleton<DemoTool>
+class DemoState : public REX::Singleton<DemoState>
 {
 public:
-	DemoTool();
+	DemoState();
 
-	// --- ITool Interface Implementation ---
-	const char*		Name() const override { return TRANSLATE("$DEMO_ToolName"); }
-	void			OnOpen() override;
-	void			OnClose() override;
-	void			Draw() override;
-	bool			OnAsyncInput(const void* inputEvent) override;
-	virtual bool	ShowInSidebar() const { return true; }
+	void OnOpen();
+	void OnClose();
+	bool OnAsyncInput(const void* inputEvent);
 
+	// Helper to save/load settings
+	void LoadSettings();
+	void SaveSettings();
 
 	DemoOverlay* GetOverlay() { return &_overlay; }
 
-	void SaveSettings();
+	// --- Sub-Tools ---
+	// 1. Basic Tool (Root Level)
+	class ToolGeneral : public ITool
+	{
+	public:
+		const char*	Name() const override { return "$DEMO_Tool_General"_T; }
+		const char*	Group() const override { return nullptr; }  // Top level
+		void		Draw() override;
+		void		OnOpen() override { DemoState::GetSingleton()->OnOpen(); }
+		void		OnClose() override { DemoState::GetSingleton()->OnClose(); }
+		bool		OnAsyncInput(const void* e) override { return DemoState::GetSingleton()->OnAsyncInput(e); }
+	};
+
+	// 2. Visuals Tool (Grouped)
+	class ToolVisuals : public ITool
+	{
+	public:
+		const char*	Name() const override { return "$DEMO_Tool_Visuals"_T; }
+		const char*	Group() const override { return "$DEMO_Group_Advanced"_T; }  // Grouped
+		void		Draw() override;
+	};
+
+	// 3. System Tool (Grouped)
+	class ToolSystem : public ITool
+	{
+	public:
+		const char*	Name() const override { return "$DEMO_Tool_System"_T; }
+		const char*	Group() const override { return "$DEMO_Group_Advanced"_T; }  // Grouped
+		void		Draw() override;
+	};
 
 private:
-	void LoadSettings();
-
+	// Draw Implementations
 	void DrawBasicWidgetsTab();
 	void DrawAdvancedWidgetsTab();
 	void DrawLayoutStyleTab();
@@ -119,7 +146,7 @@ private:
 	void DrawGameControlTab();
 	void DrawIconsTab();
 
-	// --- State Variables ---
+	// --- Shared State ---
 
 	// Standard Mutex Group
 	bool _chkNear = false;
@@ -191,4 +218,9 @@ private:
 
 	DemoOverlay _overlay;
 	SimpleOverlay _secondOverlay;
+
+	// Tool Instances
+	ToolGeneral _toolGeneral;
+	ToolVisuals _toolVisuals;
+	ToolSystem _toolSystem;
 };

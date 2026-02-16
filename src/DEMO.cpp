@@ -1,19 +1,65 @@
 #include "DEMO.h"
 
-	// Constructor
-	DemoTool::DemoTool()
+// ==========================================
+// Construction & Registration
+// ==========================================
+
+DemoState::DemoState()
 {
+	// Link Overlays
 	_overlay._secondWindow = &_secondOverlay;
 	_secondOverlay._parentWindow = &_overlay;
+
+	// Register Overlays
 	FUCK::RegisterWindow(&_overlay);
 	FUCK::RegisterWindow(&_secondOverlay);
+
+	// Register Split Tools
+	FUCK::RegisterTool(&_toolGeneral);
+	FUCK::RegisterTool(&_toolVisuals);
+	FUCK::RegisterTool(&_toolSystem);
+
+	LoadSettings();
 }
 
 // ==========================================
-// Demo Tool Core Implementation
+// Tool Implementations
 // ==========================================
 
-void DemoTool::OnOpen()
+void DemoState::ToolGeneral::Draw()
+{
+	if (FUCK::BeginTabBar("GeneralTabs")) {
+		DemoState::GetSingleton()->DrawBasicWidgetsTab();
+		DemoState::GetSingleton()->DrawAdvancedWidgetsTab();
+		FUCK::EndTabBar();
+	}
+}
+
+void DemoState::ToolVisuals::Draw()
+{
+	if (FUCK::BeginTabBar("VisualTabs")) {
+		DemoState::GetSingleton()->DrawLayoutStyleTab();
+		DemoState::GetSingleton()->DrawRenderingTab();
+		DemoState::GetSingleton()->DrawIconsTab();
+		FUCK::EndTabBar();
+	}
+}
+
+void DemoState::ToolSystem::Draw()
+{
+	if (FUCK::BeginTabBar("SystemTabs")) {
+		DemoState::GetSingleton()->DrawInputIOTab();
+		DemoState::GetSingleton()->DrawTablesTab();
+		DemoState::GetSingleton()->DrawGameControlTab();
+		FUCK::EndTabBar();
+	}
+}
+
+// ==========================================
+// Demo State Core
+// ==========================================
+
+void DemoState::OnOpen()
 {
 	logger::info("Demo Tool Opened");
 
@@ -35,7 +81,7 @@ void DemoTool::OnOpen()
 	}
 }
 
-void DemoTool::OnClose()
+void DemoState::OnClose()
 {
 	logger::info("Demo Tool Closed");
 	SaveSettings();
@@ -46,7 +92,7 @@ void DemoTool::OnClose()
 	}
 }
 
-bool DemoTool::OnAsyncInput(const void* inputEvent)
+bool DemoState::OnAsyncInput(const void* inputEvent)
 {
 	if (_inputCaptured) {
 		std::uint32_t key = 0;
@@ -99,7 +145,7 @@ void DemoTool::Draw()
 // Settings Implementation
 // ==========================================
 
-void DemoTool::LoadSettings()
+void DemoState::LoadSettings()
 {
 	Settings::GetSingleton()->Load([this](CSimpleIniA& ini) {
 		_chkNear = ini.GetBoolValue("Widgets", "ChkNear", _chkNear);
@@ -144,7 +190,7 @@ void DemoTool::LoadSettings()
 	});
 }
 
-void DemoTool::SaveSettings()
+void DemoState::SaveSettings()
 {
 	Settings::GetSingleton()->Save([this](CSimpleIniA& ini) {
 		ini.SetBoolValue("Widgets", "ChkNear", _chkNear);
@@ -257,7 +303,7 @@ void DemoOverlay::Draw()
 		currentSize.x != _windowSize.x || currentSize.y != _windowSize.y) {
 		_windowPos = currentPos;
 		_windowSize = currentSize;
-		DemoTool::GetSingleton()->SaveSettings();
+		DemoState::GetSingleton()->SaveSettings();
 	}
 
 	FUCK::Header("$DEMO_Section_WindowMetrics"_T);
@@ -334,7 +380,7 @@ void DemoOverlay::Draw()
 	FUCK::Separator();
 
 	if (FUCK::Button("$DEMO_Close"_T)) {
-		DemoTool::GetSingleton()->SaveSettings();
+		DemoState::GetSingleton()->SaveSettings();
 		_isOpen = false;
 	}
 }

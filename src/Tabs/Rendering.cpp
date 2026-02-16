@@ -1,6 +1,6 @@
 #include "DEMO.h"
 
-void DemoTool::DrawRenderingTab()
+void DemoState::DrawRenderingTab()
 {
 	if (!FUCK::BeginTabItem("$DEMO_TabRendering"_T)) {
 		return;

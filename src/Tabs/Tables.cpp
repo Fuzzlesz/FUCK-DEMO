@@ -1,6 +1,6 @@
 #include "DEMO.h"
 
-void DemoTool::DrawTablesTab()
+void DemoState::DrawTablesTab()
 {
 	if (!FUCK::BeginTabItem("$DEMO_TabTables"_T)) {
 		return;
@@ -129,7 +129,8 @@ void DemoTool::DrawTablesTab()
 
 		if (ImGuiTableSortSpecs* sorts_specs = FUCK::GetTableSortSpecs()) {
 			if (sorts_specs->SpecsDirty) {
-				std::sort(_formRows.begin(), _formRows.end(), [sorts_specs](const FormRow& a, const FormRow& b) {
+				std::vector<FormRow>* rows = &_formRows;  // capture pointers for lambda
+				std::sort(rows->begin(), rows->end(), [sorts_specs](const FormRow& a, const FormRow& b) {
 					for (int n = 0; n < sorts_specs->SpecsCount; n++) {
 						const ImGuiTableColumnSortSpecs* spec = &sorts_specs->Specs[n];
 						int delta = 0;

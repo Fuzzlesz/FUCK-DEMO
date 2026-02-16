@@ -1,6 +1,6 @@
 #include "DEMO.h"
 
-void DemoTool::DrawInputIOTab()
+void DemoState::DrawInputIOTab()
 {
 	if (!FUCK::BeginTabItem("$DEMO_TabInputIO"_T)) {
 		return;
