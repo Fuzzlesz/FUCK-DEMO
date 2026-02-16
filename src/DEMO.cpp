@@ -102,10 +102,8 @@ bool DemoState::OnAsyncInput(const void* inputEvent)
 
 		if (result == BindResult::kBound) {
 			_lastPressedKey = key;
-
 			return true;
 		}
-
 		return true;
 	}
 
