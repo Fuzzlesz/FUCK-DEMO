@@ -68,7 +68,6 @@ void DemoState::OnOpen()
 		if (ph)
 			strncpy_s(_inputBuffer, ph, sizeof(_inputBuffer));
 	}
-	LoadSettings();
 
 	if (_stepperOptions.empty()) {
 		_stepperOptions = {
@@ -119,24 +118,58 @@ bool DemoState::OnAsyncInput(const void* inputEvent)
 	return false;
 }
 
-void DemoTool::Draw()
-{
-	if (!FUCK::GetInterface()) {
-		FUCK::TextColored(ImVec4(1, 0, 0, 1), "$DEMO_ErrNoApi"_T);
-		return;
-	}
+// ==========================================
+// Overlays
+// ==========================================
 
-	if (FUCK::BeginTabBar("DemoMainTabs")) {
-		DrawBasicWidgetsTab();
-		DrawAdvancedWidgetsTab();
-		DrawLayoutStyleTab();
-		DrawRenderingTab();
-		DrawInputIOTab();
-		DrawTablesTab();
-		DrawGameControlTab();
-		DrawIconsTab();
-		FUCK::EndTabBar();
+ImVec2 SimpleOverlay::GetDefaultPos() const
+{
+	float scale = FUCK::GetResolutionScale();
+	return { _pos.x * scale, _pos.y * scale };
+}
+
+ImVec2 SimpleOverlay::GetDefaultSize() const
+{
+	float scale = FUCK::GetResolutionScale();
+	return { _size.x * scale, _size.y * scale };
+}
+
+bool SimpleOverlay::GetRequestedPos(ImVec2& outPos)
+{
+	if (_pos.x > 0.0f || _pos.y > 0.0f) {
+		outPos = _pos;
+		return true;
 	}
+	return false;
+}
+
+ImVec2 DemoOverlay::GetDefaultPos() const
+{
+	float scale = FUCK::GetResolutionScale();
+	ImVec2 displaySize = FUCK::GetDisplaySize();
+	ImVec2 scaledSize = GetDefaultSize();
+
+	float offset = 50.0f * scale;
+
+	return {
+		displaySize.x - scaledSize.x - offset,
+		100.0f * scale
+	};
+}
+
+ImVec2 DemoOverlay::GetDefaultSize() const
+{
+	float scale = FUCK::GetResolutionScale();
+	return { _baseSize.x * scale, _baseSize.y * scale };
+}
+
+bool DemoOverlay::GetRequestedPos(ImVec2& outPos)
+{
+	if (_hasLoadedPos) {
+		outPos = _windowPos;
+		return true;
+	}
+	return false;
 }
 
 // ==========================================
@@ -161,11 +194,21 @@ void DemoState::LoadSettings()
 			strncpy_s(_inputBuffer, inputBuf, sizeof(_inputBuffer));
 		}
 
-		// Overlay
-		_overlay._windowPos.x = (float)ini.GetDoubleValue("Overlay", "X", _overlay._windowPos.x);
-		_overlay._windowPos.y = (float)ini.GetDoubleValue("Overlay", "Y", _overlay._windowPos.y);
-		_overlay._windowSize.x = (float)ini.GetDoubleValue("Overlay", "Width", _overlay._windowSize.x);
-		_overlay._windowSize.y = (float)ini.GetDoubleValue("Overlay", "Height", _overlay._windowSize.y);
+		// Overlay Position
+		double x = ini.GetDoubleValue("Overlay", "X", -1.0);
+		double y = ini.GetDoubleValue("Overlay", "Y", -1.0);
+		double w = ini.GetDoubleValue("Overlay", "Width", -1.0);
+		double h = ini.GetDoubleValue("Overlay", "Height", -1.0);
+
+		if (x != -1.0 && y != -1.0) {
+			_overlay._windowPos = { (float)x, (float)y };
+			_overlay._lastSavedPos = _overlay._windowPos;
+			_overlay._hasLoadedPos = true;
+		}
+		if (w != -1.0 && h != -1.0) {
+			_overlay._windowSize = { (float)w, (float)h };
+			_overlay._lastSavedSize = _overlay._windowSize;
+		}
 
 		// Keys
 		_overlay._toggleHotkey.kKey = (std::uint32_t)ini.GetLongValue("Overlay", "Hotkey", _overlay._toggleHotkey.kKey);
@@ -291,21 +334,18 @@ WindowFlags DemoOverlay::GetFlags() const
 
 void DemoOverlay::Draw()
 {
-	FUCK::SetNextWindowPos(_windowPos, 8 /* ImGuiCond_Appearing */);
-	FUCK::SetNextWindowSize(_windowSize, 8 /* ImGuiCond_Appearing */);
-
-	ImVec2 currentPos = FUCK::GetWindowPos();
-	ImVec2 currentSize = FUCK::GetWindowSize();
-
-	if (currentPos.x != _windowPos.x || currentPos.y != _windowPos.y ||
-		currentSize.x != _windowSize.x || currentSize.y != _windowSize.y) {
-		_windowPos = currentPos;
-		_windowSize = currentSize;
-		DemoState::GetSingleton()->SaveSettings();
+	if (FUCK::IsMouseReleased(0)) {  // 0 = Left Mouse Button
+		if (_windowPos.x != _lastSavedPos.x || _windowPos.y != _lastSavedPos.y ||
+			_windowSize.x != _lastSavedSize.x || _windowSize.y != _lastSavedSize.y) {
+			_lastSavedPos = _windowPos;
+			_lastSavedSize = _windowSize;
+			DemoState::GetSingleton()->SaveSettings();
+		}
 	}
 
 	FUCK::Header("$DEMO_Section_WindowMetrics"_T);
 	FUCK::Text("$DEMO_MetricSize"_T, _windowSize.x, _windowSize.y);
+	FUCK::Text("$DEMO_MetricPos"_T, _windowPos.x, _windowPos.y);
 	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_WindowFlags"_T);

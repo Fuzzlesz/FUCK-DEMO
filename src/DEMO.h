@@ -21,8 +21,9 @@ public:
 		return f;
 	}
 
-	ImVec2 GetDefaultPos() const override { return _pos; }
-	ImVec2 GetDefaultSize() const override { return _size; }
+	ImVec2 GetDefaultPos() const override;
+	ImVec2 GetDefaultSize() const override;
+	bool GetRequestedPos(ImVec2& outPos) override;
 
 	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override
 	{
@@ -32,7 +33,8 @@ public:
 
 	bool _isOpen = false;
 	bool _passInput = false;
-	ImVec2 _pos{ 1670.0f, 635.0f };
+
+	ImVec2 _pos{ 800.0f, 400.0f };
 	ImVec2 _size{ 400.0f, 300.0f };
 
 	IWindow* _parentWindow = nullptr;
@@ -51,8 +53,9 @@ public:
 	void		SetOpen(bool a_open) override { _isOpen = a_open; }
 	WindowFlags	GetFlags() const override;
 
-	ImVec2 GetDefaultSize() const override { return _windowSize; }
-	ImVec2 GetDefaultPos() const override { return _windowPos; }
+	ImVec2 GetDefaultSize() const override;
+	ImVec2 GetDefaultPos() const override;
+	bool GetRequestedPos(ImVec2& outPos) override;
 
 	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override
 	{
@@ -61,10 +64,16 @@ public:
 	}
 
 	bool _isOpen = false;
+	bool _hasLoadedPos = false;
 
-	// Window Metrics
-	ImVec2 _windowPos{ 2075.0f, 120.0f };
-	ImVec2 _windowSize{ 430.0f, 855.0f };
+	// Base Window Metrics
+	ImVec2 _windowPos{ 0.0f, 0.0f };
+	ImVec2 _windowSize{ 0.0f, 0.0f };
+
+	ImVec2 _lastSavedPos{ 0.0f, 0.0f };
+	ImVec2 _lastSavedSize{ 0.0f, 0.0f };
+
+	const ImVec2 _baseSize{ 430.0f, 855.0f };
 
 	FUCK::ManagedHotkey _toggleHotkey{ 35, 0, 42, -1, -1, -1 };
 	SimpleOverlay* _secondWindow = nullptr;
