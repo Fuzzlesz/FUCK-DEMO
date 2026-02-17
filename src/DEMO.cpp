@@ -353,7 +353,7 @@ void DemoOverlay::Draw()
 	FUCK::Checkbox("$DEMO_Flag_Blur"_T, &_reqBlur, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_Blur"_T);
 	FUCK::Checkbox("$DEMO_Flag_HideHUD"_T, &_reqHideHUD, false, false);
-	FUCK::SetTooltip("DEMO_FlagTip_HideHUD"_T);
+	FUCK::SetTooltip("$DEMO_FlagTip_HideHUD"_T);
 	FUCK::Checkbox("$DEMO_Flag_PauseHard"_T, &_reqPauseHard, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_PauseHard"_T);
 	FUCK::Checkbox("$DEMO_Flag_PauseSoft"_T, &_reqPauseSoft, false, false);
