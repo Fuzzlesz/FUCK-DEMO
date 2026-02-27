@@ -57,18 +57,13 @@ void DemoState::DrawRenderingTab()
 		FUCK::SliderFloat("$DEMO_Thickness"_T, &_overlayThickness, 0.5f, 10.0f, "%.1f px");
 		FUCK::ColorEdit3("$DEMO_Color"_T, _overlayColor, 0);
 
-		ImU32 col = ImGui::ColorConvertFloat4ToU32(ImVec4(_overlayColor[0], _overlayColor[1], _overlayColor[2], _overlayColor[3]));
-
 		if (_overlayType == 0) {  // Grid
 			FUCK::SliderInt("$DEMO_GridRows"_T, &_gridRows, 0, 50);
 			FUCK::SliderInt("$DEMO_GridCols"_T, &_gridCols, 0, 50);
-			static float gridRot = 0.0f;
-			FUCK::SliderFloat("$DEMO_Rotation"_T, &gridRot, -45.0f, 45.0f, "%.0f deg");
-			FUCK::DrawGrid(_overlayThickness, col, (float)_gridRows, (float)_gridCols, gridRot);
+			FUCK::SliderFloat("$DEMO_Rotation"_T, &_spiralRot, -45.0f, 45.0f, "%.0f deg");
 		} else if (_overlayType == 1) {  // Crosshair
 			FUCK::SliderInt("$DEMO_GridCols"_T, &_gridCols, 1, 10);
 			FUCK::SliderInt("$DEMO_GridRows"_T, &_gridRows, 1, 10);
-			FUCK::DrawCrosshair(_overlayThickness, col, (float)_gridRows, (float)_gridCols);
 		} else if (_overlayType == 2) {  // Golden Spiral
 			const char* basicAnchors[] = {
 				"$DEMO_Anchor_BR"_T, "$DEMO_Anchor_BL"_T,
@@ -76,20 +71,16 @@ void DemoState::DrawRenderingTab()
 				"$DEMO_Anchor_Center"_T
 			};
 			FUCK::Combo("$DEMO_SpiralAnchor"_T, &_spiralAnchor, basicAnchors, 5);
-			static bool showSquares = false;
-			FUCK::Checkbox("$DEMO_ShowSquares"_T, &showSquares);
+			FUCK::Checkbox("$DEMO_ShowSquares"_T, &_showSquares);
 			FUCK::SliderFloat("$DEMO_SpiralScale"_T, &_spiralScale, 0.1f, 5.0f);
 			FUCK::SliderFloat("$DEMO_Rotation"_T, &_spiralRot, -180.0f, 180.0f);
 			FUCK::SliderFloat("$DEMO_SpiralTurns"_T, &_spiralTurns, 1.0f, 20.0f);
-			FUCK::DrawGoldenSpiral(_overlayThickness, col, _spiralAnchor, _spiralTurns, _spiralRot, _spiralScale, showSquares);
 		} else if (_overlayType == 3) {  // Golden Grid
 			static int subDivs = 0;
 			FUCK::SliderInt("$DEMO_Subdivisions"_T, &subDivs, 0, 3);
-			FUCK::DrawGoldenGrid(_overlayThickness, col, subDivs);
 		} else if (_overlayType == 4) {  // Triangle
 			static bool triMirror = false;
 			FUCK::Checkbox("$DEMO_Mirror"_T, &triMirror);
-			FUCK::DrawTriangle(_overlayThickness, col, triMirror);
 		}
 	}
 
@@ -125,4 +116,26 @@ void DemoState::DrawRenderingTab()
 	FUCK::Dummy(ImVec2(0, 10));
 
 	FUCK::EndTabItem();
+}
+
+void DemoState::DrawOverlays()
+{
+	if (!_showOverlay)
+		return;
+
+	ImU32 col = ImGui::ColorConvertFloat4ToU32(ImVec4(_overlayColor[0], _overlayColor[1], _overlayColor[2], _overlayColor[3]));
+
+	if (_overlayType == 0) {  // Grid
+		FUCK::DrawGrid(_overlayThickness, col, (float)_gridRows, (float)_gridCols, _spiralRot);
+	} else if (_overlayType == 1) {  // Crosshair
+		FUCK::DrawCrosshair(_overlayThickness, col, (float)_gridRows, (float)_gridCols);
+	} else if (_overlayType == 2) {       // Golden Spiral
+		FUCK::DrawGoldenSpiral(_overlayThickness, col, _spiralAnchor, _spiralTurns, _spiralRot, _spiralScale, _showSquares);
+	} else if (_overlayType == 3) {  // Golden Grid
+		static int subDivs = 0;
+		FUCK::DrawGoldenGrid(_overlayThickness, col, subDivs);
+	} else if (_overlayType == 4) {  // Triangle
+		static bool triMirror = false;
+		FUCK::DrawTriangle(_overlayThickness, col, triMirror);
+	}
 }

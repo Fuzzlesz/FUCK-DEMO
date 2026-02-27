@@ -121,6 +121,7 @@ public:
 	virtual const char* Name() const = 0;
 	virtual const char* Group() const { return nullptr; }
 	virtual void Draw() = 0;
+	virtual void RenderOverlay() {}
 	virtual void OnOpen() {}
 	virtual void OnClose() {}
 	virtual bool OnAsyncInput(const void*) { return false; }

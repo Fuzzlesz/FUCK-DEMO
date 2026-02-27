@@ -121,6 +121,7 @@ public:
 		const char*	Name() const override { return "$DEMO_Tool_General"_T; }
 		const char*	Group() const override { return nullptr; }  // Top level
 		void		Draw() override;
+		void		RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 		void		OnOpen() override { DemoState::GetSingleton()->OnOpen(); }
 		void		OnClose() override { DemoState::GetSingleton()->OnClose(); }
 		bool		OnAsyncInput(const void* e) override { return DemoState::GetSingleton()->OnAsyncInput(e); }
@@ -133,6 +134,7 @@ public:
 		const char*	Name() const override { return "$DEMO_Tool_Visuals"_T; }
 		const char*	Group() const override { return "$DEMO_Group_Advanced"_T; }  // Grouped
 		void		Draw() override;
+		void		RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 	};
 
 	// 3. System Tool (Grouped)
@@ -142,6 +144,7 @@ public:
 		const char*	Name() const override { return "$DEMO_Tool_System"_T; }
 		const char*	Group() const override { return "$DEMO_Group_Advanced"_T; }  // Grouped
 		void		Draw() override;
+		void		RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 	};
 
 private:
@@ -150,6 +153,7 @@ private:
 	void DrawAdvancedWidgetsTab();
 	void DrawLayoutStyleTab();
 	void DrawRenderingTab();
+	void DrawOverlays();
 	void DrawInputIOTab();
 	void DrawTablesTab();
 	void DrawGameControlTab();
@@ -192,6 +196,7 @@ private:
 	float _spiralRot = 0.0f;
 	float _spiralScale = 1.0f;
 	float _spiralTurns = 6.0f;
+	bool _showSquares = false;
 
 	// Input Capture Demo
 	int _keyTestIndex = 1;
