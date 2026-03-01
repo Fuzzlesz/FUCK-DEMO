@@ -15,7 +15,7 @@ void DemoState::DrawBasicWidgetsTab()
 	FUCK::Header("$DEMO_Section_IconButtons"_T);
 
 	ImVec2 iconSize;
-	void* iconTex = FUCK::GetIconForKey(1, &iconSize);  // Esc key icon
+	ImTextureID iconTex = FUCK::GetIconForKey(1, &iconSize);  // Esc key icon
 	if (iconTex) {
 		if (FUCK::ButtonIconWithLabel("$DEMO_IconBtn_NearIconLeft"_T, iconTex, iconSize, false, false))
 			_iconBtnClicks++;

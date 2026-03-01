@@ -178,12 +178,13 @@ private:
 	char _inputBuffer[256] = { 0 };
 
 	// Feature Demos
+	int _iconBtnClicks = 0;
 	bool _useChildWindow = false;
-	void* _loadedImage = nullptr;
 	bool _showSpinner = false;
 	bool _renderSuspended = false;
+
+	FUCK::Image _loadedImage;
 	char _ImagePath[256] = "Data/Interface/test.png";
-	int _iconBtnClicks = 0;
 
 	// Overlay Demo
 	bool _showOverlay = false;

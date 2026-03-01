@@ -11,25 +11,22 @@ void DemoState::DrawRenderingTab()
 	FUCK::InputText("$DEMO_ImagePath"_T, _ImagePath, sizeof(_ImagePath));
 
 	if (FUCK::Button("$DEMO_LoadImage"_T)) {
-		if (_loadedImage)
-			FUCK::ReleaseImage(_loadedImage);
-		_loadedImage = FUCK::LoadImage(_ImagePath, false);
+		_loadedImage = FUCK::Image(_ImagePath, false);
 	}
 	FUCK::SameLine();
 	if (FUCK::Button("$DEMO_ReleaseImage"_T)) {
-		if (_loadedImage) {
-			FUCK::ReleaseImage(_loadedImage);
-			_loadedImage = nullptr;
-		}
+		_loadedImage.Reset();
 	}
 
-	if (_loadedImage) {
-		float w = 0.0f, h = 0.0f;
-		FUCK::GetImageInfo(_loadedImage, &w, &h);
+	if (_loadedImage.IsLoaded()) {
+		float w = _loadedImage.GetWidth();
+		float h = _loadedImage.GetHeight();
+
 		FUCK::Text("$DEMO_ImageSize"_T, w, h);
 		float availW = FUCK::GetContentRegionAvail().x;
 		float scale = (w > availW) ? availW / w : 1.0f;
-		FUCK::DrawImage(_loadedImage, ImVec2(w * scale, h * scale));
+
+		FUCK::DrawImage(_loadedImage.GetID(), ImVec2(w * scale, h * scale));
 	}
 
 	FUCK::Separator();

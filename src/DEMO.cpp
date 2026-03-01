@@ -84,11 +84,6 @@ void DemoState::OnClose()
 {
 	logger::info("Demo Tool Closed");
 	SaveSettings();
-
-	if (_loadedImage) {
-		FUCK::ReleaseImage(_loadedImage);
-		_loadedImage = nullptr;
-	}
 }
 
 bool DemoState::OnAsyncInput(const void* inputEvent)
