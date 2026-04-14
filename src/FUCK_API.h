@@ -209,12 +209,18 @@ struct FUCK_Interface
 	void (*LoadTranslation)(const char*);
 	const char* (*GetTranslation)(const char*);
 	void (*SanitizePath)(char*, const char*, size_t);
+	void (*LoadPluginINI)(const wchar_t* defaultPath, const wchar_t* userPath, void* userdata, void (*callback)(CSimpleIniA&, void*));
+	void (*SavePluginINI)(const wchar_t* userPath, void* userdata, void (*callback)(CSimpleIniA&, void*));
 	void (*PushItemFlag)(ItemFlags, bool);
 	void (*PopItemFlag)();
 	void (*HelpMarker)(const char*);
 	void (*PushID_Str)(const char*);
 	void (*PushID_Int)(int);
 	void (*PopID)();
+
+	// Menu Events
+	void (*AddMenuListener)(void* userdata, void (*callback)(const char* menuName, bool opening, void* userdata));
+	void (*RemoveMenuListener)(void* userdata);
 
 	// Assets
 	void* (*LoadImage)(const char*, bool);
@@ -391,9 +397,7 @@ namespace FUCK
 		return true;
 	}
 
-	// -------------------------------------------------------------------------
-	// RAII Image Wrapper
-	// -------------------------------------------------------------------------
+	// --- RAII Image Wrapper ---
 	class Image
 	{
 	public:
@@ -856,6 +860,100 @@ namespace FUCK
 		if (auto i = GetInterface())
 			i->HelpMarker(desc);
 	}
+
+	// --- Plugin Settings ---
+	class PluginSettings
+	{
+	public:
+		PluginSettings(const wchar_t* a_defaultPath, const wchar_t* a_userPath) :
+			_defaultPath(a_defaultPath), _userPath(a_userPath)
+		{}
+
+		using INIFunc = std::function<void(CSimpleIniA&)>;
+
+		void Load(INIFunc a_func) const
+		{
+			if (!a_func)
+				return;
+			if (auto* i = GetInterface())
+				i->LoadPluginINI(_defaultPath, _userPath, &a_func, [](CSimpleIniA& ini, void* ud) {
+					(*static_cast<INIFunc*>(ud))(ini);
+				});
+		}
+
+		void Save(INIFunc a_func) const
+		{
+			if (!a_func)
+				return;
+			if (auto* i = GetInterface())
+				i->SavePluginINI(_userPath, &a_func, [](CSimpleIniA& ini, void* ud) {
+					(*static_cast<INIFunc*>(ud))(ini);
+				});
+		}
+
+	private:
+		const wchar_t* _defaultPath;
+		const wchar_t* _userPath;
+	};
+
+	// --- RAII Menu Events ---
+	inline void AddMenuListener(void* userdata, void (*callback)(const char* menuName, bool opening, void* userdata))
+	{
+		if (auto i = GetInterface())
+			i->AddMenuListener(userdata, callback);
+	}
+	inline void RemoveMenuListener(void* userdata)
+	{
+		if (auto i = GetInterface())
+			i->RemoveMenuListener(userdata);
+	}
+
+	class MenuEventListener
+	{
+	public:
+		using Callback = std::function<void(const char* menuName, bool opening)>;
+
+		MenuEventListener() = default;
+
+		explicit MenuEventListener(Callback a_cb) :
+			_callback(std::move(a_cb))
+		{
+			FUCK::AddMenuListener(this, &MenuEventListener::Dispatch);
+		}
+
+		~MenuEventListener()
+		{
+			if (_callback)
+				FUCK::RemoveMenuListener(this);
+		}
+
+		// Non-copyable, movable
+		MenuEventListener(const MenuEventListener&) = delete;
+		MenuEventListener& operator=(const MenuEventListener&) = delete;
+
+		MenuEventListener& operator=(MenuEventListener&& other) noexcept
+		{
+			if (this != &other) {
+				if (_callback)
+					FUCK::RemoveMenuListener(this);
+				_callback = std::move(other._callback);
+				if (_callback) {
+					FUCK::RemoveMenuListener(&other);
+					FUCK::AddMenuListener(this, &MenuEventListener::Dispatch);
+					other._callback = nullptr;
+				}
+			}
+			return *this;
+		}
+
+	private:
+		static void Dispatch(const char* menuName, bool opening, void* userdata)
+		{
+			static_cast<MenuEventListener*>(userdata)->_callback(menuName, opening);
+		}
+
+		Callback _callback;
+	};
 
 	// --- Assets & Overlays ---
 	inline ImTextureID GetIconForKey(std::uint32_t key, ImVec2* outSize = nullptr)

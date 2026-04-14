@@ -1,6 +1,14 @@
 #pragma once
 #include "FUCK_API.h"
-#include "System/Settings.h"
+
+inline FUCK::PluginSettings& GetSettings()
+{
+	static FUCK::PluginSettings s{
+		L"Data/SKSE/Plugins/FUCK_DEMO.ini",
+		L"Data/SKSE/Plugins/FUCK_DEMO_Custom.ini"
+	};
+	return s;
+}
 
 // ==========================================
 // Secondary Simple Overlay

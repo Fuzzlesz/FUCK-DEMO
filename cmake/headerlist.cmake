@@ -3,5 +3,4 @@ set(headers ${headers}
 	src/FUCK_API.h
 	src/PCH.h
 	src/System/IconsFontAwesome6.h
-	src/System/Settings.h
 )

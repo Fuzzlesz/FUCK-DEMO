@@ -173,7 +173,7 @@ bool DemoOverlay::GetRequestedPos(ImVec2& outPos)
 
 void DemoState::LoadSettings()
 {
-	Settings::GetSingleton()->Load([this](CSimpleIniA& ini) {
+	GetSettings().Load([this](CSimpleIniA& ini) {
 		_chkNear = ini.GetBoolValue("Widgets", "ChkNear", _chkNear);
 		_chkMutexA = ini.GetBoolValue("Widgets", "MutexA", _chkMutexA);
 		_chkMutexB = ini.GetBoolValue("Widgets", "MutexB", _chkMutexB);
@@ -228,7 +228,7 @@ void DemoState::LoadSettings()
 
 void DemoState::SaveSettings()
 {
-	Settings::GetSingleton()->Save([this](CSimpleIniA& ini) {
+	GetSettings().Save([this](CSimpleIniA& ini) {
 		ini.SetBoolValue("Widgets", "ChkNear", _chkNear);
 		ini.SetBoolValue("Widgets", "MutexA", _chkMutexA);
 		ini.SetBoolValue("Widgets", "MutexB", _chkMutexB);
