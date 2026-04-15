@@ -7,7 +7,7 @@ void DemoState::DrawBasicWidgetsTab()
 	}
 
 	FUCK::Header("$DEMO_Section_Buttons"_T);
-	if (FUCK::Button("$DEMO_HostButton"_T)) {}
+	FUCK::Button("$DEMO_HostButton"_T);
 	FUCK::SetTooltip("$DEMO_ButtonTip"_T);
 
 	FUCK::Spacing();

@@ -114,16 +114,16 @@ void DemoState::DrawTablesTab()
 	FUCK::SeparatorThick();
 	FUCK::Spacing();
 
-	TableFlags tableFlags = TableFlags::kResizable | TableFlags::kRowBg | TableFlags::kBorders |
-	                        TableFlags::kSortable | TableFlags::kReorderable |
-	                        TableFlags::kSizingStretchProp;
+	FUCK::TableFlags tableFlags = FUCK::TableFlags::kResizable | FUCK::TableFlags::kRowBg | FUCK::TableFlags::kBorders |
+	                        FUCK::TableFlags::kSortable | FUCK::TableFlags::kReorderable |
+	                        FUCK::TableFlags::kSizingStretchProp;
 
 	if (FUCK::BeginTable("FormInspectorTable", 5, tableFlags)) {
-		FUCK::TableSetupColumn("$DEMO_Col_ID"_T, TableColumnFlags::kWidthStretch, 0.8f);
-		FUCK::TableSetupColumn("$DEMO_Col_Name"_T, TableColumnFlags::kWidthStretch, 3.0f);
-		FUCK::TableSetupColumn("$DEMO_Col_Type"_T, TableColumnFlags::kWidthStretch, 1.2f);
-		FUCK::TableSetupColumn("$DEMO_Col_Weight"_T, TableColumnFlags::kWidthStretch, 0.6f);
-		FUCK::TableSetupColumn("$DEMO_Col_Value"_T, TableColumnFlags::kWidthStretch, 0.6f);
+		FUCK::TableSetupColumn("$DEMO_Col_ID"_T, FUCK::TableColumnFlags::kWidthStretch, 0.8f);
+		FUCK::TableSetupColumn("$DEMO_Col_Name"_T, FUCK::TableColumnFlags::kWidthStretch, 3.0f);
+		FUCK::TableSetupColumn("$DEMO_Col_Type"_T, FUCK::TableColumnFlags::kWidthStretch, 1.2f);
+		FUCK::TableSetupColumn("$DEMO_Col_Weight"_T, FUCK::TableColumnFlags::kWidthStretch, 0.6f);
+		FUCK::TableSetupColumn("$DEMO_Col_Value"_T, FUCK::TableColumnFlags::kWidthStretch, 0.6f);
 
 		FUCK::TableHeadersRow();
 

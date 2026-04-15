@@ -15,7 +15,7 @@ void DemoState::DrawLayoutStyleTab()
 	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_Fonts"_T);
-	FUCK::PushFont(FUCK::GetFont(FUCK_Font::kLarge));
+	FUCK::PushFont(FUCK::GetFont(FUCK::Font::kLarge));
 	FUCK::Text("$DEMO_LargeFont"_T);
 	FUCK::PopFont();
 	FUCK::Text("$DEMO_RegularFont"_T);

@@ -94,7 +94,7 @@ bool DemoState::OnAsyncInput(const void* inputEvent)
 
 		auto result = FUCK::GetInputBind(inputEvent, &key, &mod1, &mod2);
 
-		if (result == BindResult::kBound) {
+		if (result == FUCK::BindResult::kBound) {
 			_lastPressedKey = key;
 			return true;
 		}
@@ -298,32 +298,31 @@ void SimpleOverlay::Draw()
 // Demo Overlay Implementation
 // ==========================================
 
-WindowFlags DemoOverlay::GetFlags() const
+FUCK::WindowFlags DemoOverlay::GetFlags() const
 {
-	WindowFlags flags = WindowFlags::kNone;
+	FUCK::WindowFlags flags = FUCK::WindowFlags::kNone;
 	if (_reqBlur)
-		flags = flags | WindowFlags::kBlurBackground;
+		flags = flags | FUCK::WindowFlags::kBlurBackground;
 	if (_reqHideHUD)
-		flags = flags | WindowFlags::kHideHUD;
+		flags = flags | FUCK::WindowFlags::kHideHUD;
 	if (_reqPauseHard)
-		flags = flags | WindowFlags::kPauseHard;
+		flags = flags | FUCK::WindowFlags::kPauseHard;
 	if (_reqPauseSoft)
-		flags = flags | WindowFlags::kPauseSoft;
+		flags = flags | FUCK::WindowFlags::kPauseSoft;
 	if (_reqCloseOnEsc)
-		flags = flags | WindowFlags::kCloseOnEsc;
+		flags = flags | FUCK::WindowFlags::kCloseOnEsc;
 	if (_reqCloseOnMenu)
-		flags = flags | WindowFlags::kCloseOnGameMenu;
+		flags = flags | FUCK::WindowFlags::kCloseOnGameMenu;
 	if (_reqPassInput)
-		flags = flags | WindowFlags::kPassInputToGame;
+		flags = flags | FUCK::WindowFlags::kPassInputToGame;
 	if (_reqBlockVanity)
-		flags = flags | WindowFlags::kBlockVanity;
+		flags = flags | FUCK::WindowFlags::kBlockVanity;
 	if (_reqNoBackground)
-		flags = flags | WindowFlags::kNoBackground;
+		flags = flags | FUCK::WindowFlags::kNoBackground;
 	if (_reqNoDecoration)
-		flags = flags | WindowFlags::kNoDecoration;
+		flags = flags | FUCK::WindowFlags::kNoDecoration;
 	if (_reqExtendBorder)
-		flags = flags | WindowFlags::kExtendBorder;
-
+		flags = flags | FUCK::WindowFlags::kExtendBorder;
 	return flags;
 }
 

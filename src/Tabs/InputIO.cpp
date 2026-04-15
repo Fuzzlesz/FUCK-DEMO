@@ -28,9 +28,9 @@ void DemoState::DrawInputIOTab()
 	FUCK::Separator();
 
 	FUCK::Header("$DEMO_Section_Modifiers"_T);
-	FUCK::Text("$DEMO_ModShift"_T, FUCK::IsModifierPressed(Modifier::kShift) ? "YES" : "NO");
-	FUCK::Text("$DEMO_ModCtrl"_T, FUCK::IsModifierPressed(Modifier::kCtrl) ? "YES" : "NO");
-	FUCK::Text("$DEMO_ModAlt"_T, FUCK::IsModifierPressed(Modifier::kAlt) ? "YES" : "NO");
+	FUCK::Text("$DEMO_ModShift"_T, FUCK::IsModifierPressed(FUCK::Modifier::kShift) ? "YES" : "NO");
+	FUCK::Text("$DEMO_ModCtrl"_T, FUCK::IsModifierPressed(FUCK::Modifier::kCtrl) ? "YES" : "NO");
+	FUCK::Text("$DEMO_ModAlt"_T, FUCK::IsModifierPressed(FUCK::Modifier::kAlt) ? "YES" : "NO");
 
 	FUCK::Spacing();
 

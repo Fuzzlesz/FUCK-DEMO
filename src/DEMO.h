@@ -13,7 +13,7 @@ inline FUCK::PluginSettings& GetSettings()
 // ==========================================
 // Secondary Simple Overlay
 // ==========================================
-class SimpleOverlay : public IWindow
+class SimpleOverlay : public FUCK::IWindow
 {
 public:
 	const char*	Title() const override { return "$DEMO_SecondOverlayTitle"_T; }
@@ -21,11 +21,11 @@ public:
 	bool		IsOpen() const override { return _isOpen; }
 	void		SetOpen(bool a_open) override { _isOpen = a_open; }
 
-	WindowFlags GetFlags() const override
+	FUCK::WindowFlags GetFlags() const override
 	{
-		WindowFlags f = WindowFlags::kNoDecoration;
+		FUCK::WindowFlags f = FUCK::WindowFlags::kNoDecoration;
 		if (_passInput)
-			f = f | WindowFlags::kPassInputToGame;
+			f = f | FUCK::WindowFlags::kPassInputToGame;
 		return f;
 	}
 
@@ -51,15 +51,15 @@ public:
 // ==========================================
 // Demo Overlay Window (Main)
 // ==========================================
-class DemoOverlay : public IWindow
+class DemoOverlay : public FUCK::IWindow
 {
 public:
 	// --- IWindow Interface Implementation ---
-	const char*	Title() const override { return "$DEMO_OverlayTitleHint"_T; }
-	void		Draw() override;
-	bool		IsOpen() const override { return _isOpen; }
-	void		SetOpen(bool a_open) override { _isOpen = a_open; }
-	WindowFlags	GetFlags() const override;
+	const char*			Title() const override { return "$DEMO_OverlayTitleHint"_T; }
+	void				Draw() override;
+	bool				IsOpen() const override { return _isOpen; }
+	void				SetOpen(bool a_open) override { _isOpen = a_open; }
+	FUCK::WindowFlags	GetFlags() const override;
 
 	ImVec2 GetDefaultSize() const override;
 	ImVec2 GetDefaultPos() const override;
@@ -123,7 +123,7 @@ public:
 
 	// --- Sub-Tools ---
 	// 1. Basic Tool (Root Level)
-	class ToolGeneral : public ITool
+	class ToolGeneral : public FUCK::ITool
 	{
 	public:
 		const char*	Name() const override { return "$DEMO_Tool_General"_T; }
@@ -136,7 +136,7 @@ public:
 	};
 
 	// 2. Visuals Tool (Grouped)
-	class ToolVisuals : public ITool
+	class ToolVisuals : public FUCK::ITool
 	{
 	public:
 		const char*	Name() const override { return "$DEMO_Tool_Visuals"_T; }
@@ -146,7 +146,7 @@ public:
 	};
 
 	// 3. System Tool (Grouped)
-	class ToolSystem : public ITool
+	class ToolSystem : public FUCK::ITool
 	{
 	public:
 		const char*	Name() const override { return "$DEMO_Tool_System"_T; }
