@@ -43,7 +43,6 @@ namespace FUCK
 		kNone,
 		kBound,
 		kCancelled,
-		kError
 	};
 
 	// --- Bitflags ---
@@ -126,31 +125,32 @@ namespace FUCK
 	class ITool
 	{
 	public:
-		virtual ~ITool() = default;
+		virtual            ~ITool() = default;
 		virtual const char* Name() const = 0;
 		virtual const char* Group() const { return nullptr; }
-		virtual void Draw() = 0;
-		virtual void RenderOverlay() {}
-		virtual void OnOpen() {}
-		virtual void OnClose() {}
-		virtual bool OnAsyncInput(const void*) { return false; }
-		virtual bool ShowInSidebar() const { return true; }
+		virtual void        Draw() = 0;
+		virtual void        RenderOverlay() {}
+		virtual void        OnOpen() {}
+		virtual void        OnClose() {}
+		virtual bool        OnAsyncInput(const void*) { return false; }
+		virtual bool        ShowInSidebar() const { return true; }
 	};
 
 	/// @brief Implement this to add a floating, independent Window to the FUCK framework.
 	class IWindow
 	{
 	public:
-		virtual ~IWindow() = default;
+		virtual            ~IWindow() = default;
 		virtual const char* Title() const = 0;
-		virtual void Draw() = 0;
-		virtual bool IsOpen() const = 0;
-		virtual void SetOpen(bool a_open) = 0;
+		virtual void        Draw() = 0;
+		virtual bool        IsOpen() const = 0;
+		virtual void        SetOpen(bool a_open) = 0;
 		virtual WindowFlags GetFlags() const { return WindowFlags::kNone; }
-		virtual ImVec2 GetDefaultSize() const { return ImVec2(400.0f, 300.0f); }
-		virtual ImVec2 GetDefaultPos() const { return ImVec2(0.0f, 0.0f); }
-		virtual bool GetRequestedPos(ImVec2& /*outPos*/) { return false; }
-		virtual void UpdateState(const ImVec2& /*currentPos*/, const ImVec2& /*currentSize*/) {}
+		virtual ImVec2      GetDefaultSize() const { return ImVec2(400.0f, 300.0f); }
+		virtual ImVec2      GetDefaultPos() const { return ImVec2(0.0f, 0.0f); }
+		virtual bool        GetRequestedPos(ImVec2& /*outPos*/) { return false; }
+		virtual void        UpdateState(const ImVec2& /*currentPos*/, const ImVec2& /*currentSize*/) {}
+		virtual bool        OnAsyncInput(const void*) { return false; }
 	};
 }
 
@@ -166,6 +166,7 @@ struct FUCK_Interface
 	// Registration
 	void (*RegisterTool)(FUCK::ITool*);
 	void (*RegisterWindow)(FUCK::IWindow*);
+	void (*UnregisterWindow)(FUCK::IWindow*);
 
 	// Display
 	float (*GetResolutionScale)();
@@ -416,6 +417,11 @@ namespace FUCK
 	{
 		if (auto i = GetInterface())
 			i->RegisterWindow(window);
+	}
+	inline void UnregisterWindow(IWindow* window)
+	{
+		if (auto i = GetInterface())
+			i->UnregisterWindow(window);
 	}
 
 	// ------------------------------------------------------------------------
@@ -1260,6 +1266,7 @@ namespace FUCK
 			kKey = gKey = 0;
 			kMod1 = gMod1 = kMod2 = gMod2 = -1;
 			isBinding = false;
+			wasTriggered = false;
 		}
 	};
 
@@ -1326,25 +1333,71 @@ namespace FUCK
 		return true;
 	}
 
+	// --- Hotkey Cast Helpers ---
+	template <typename T>
+	constexpr std::uint32_t AsU32(T a_enum) noexcept
+	{
+		return static_cast<std::uint32_t>(a_enum);
+	}
+
+	template <typename T>
+	constexpr std::int32_t AsI32(T a_enum) noexcept
+	{
+		return static_cast<std::int32_t>(a_enum);
+	}
+
+	inline constexpr std::int32_t kGPBaseI32 = static_cast<std::int32_t>(SKSE::InputMap::kMacro_GamepadOffset);
+
 	inline bool ProcessManagedHotkey(const void*, ManagedHotkey& h)
 	{
 		if (h.isBinding)
 			return false;
-		bool pressed = false;
-		auto checkMod = [](std::int32_t mod) -> bool {
-			if (mod <= 0)
-				return true;
-			if (mod == 281 || mod == 282)
-				return GetAnalogInput(static_cast<std::uint32_t>(mod)) > 0.4f;
-			return IsInputDown(static_cast<std::uint32_t>(mod));
+
+		static constexpr std::int32_t kGP_LT = kGPBaseI32 + SKSE::InputMap::kGamepadButtonOffset_LT;
+		static constexpr std::int32_t kGP_RT = kGPBaseI32 + SKSE::InputMap::kGamepadButtonOffset_RT;
+
+		static constexpr std::int32_t kbMods[] = {
+			AsI32(RE::BSWin32KeyboardDevice::Key::kLeftShift),
+			AsI32(RE::BSWin32KeyboardDevice::Key::kRightShift),
+			AsI32(RE::BSWin32KeyboardDevice::Key::kLeftControl),
+			AsI32(RE::BSWin32KeyboardDevice::Key::kRightControl),
+			AsI32(RE::BSWin32KeyboardDevice::Key::kLeftAlt),
+			AsI32(RE::BSWin32KeyboardDevice::Key::kRightAlt),
 		};
 
-		if (h.kKey != 0) {
-			if (IsInputDown(h.kKey) && checkMod(h.kMod1) && checkMod(h.kMod2))
+		static constexpr std::int32_t gpMods[] = {
+			kGPBaseI32 + SKSE::InputMap::kGamepadButtonOffset_LEFT_SHOULDER,
+			kGPBaseI32 + SKSE::InputMap::kGamepadButtonOffset_RIGHT_SHOULDER,
+			kGP_LT,
+			kGP_RT,
+		};
+
+		// Triggers (LT/RT) are analog
+		auto checkMod = [](std::int32_t mod) -> bool {
+			if (mod <= 0)
+				return false;
+			if (mod == kGP_LT || mod == kGP_RT)
+				return GetAnalogInput(AsU32(mod)) > 0.4f;
+			return IsInputDown(AsU32(mod));
+		};
+
+		auto checkStrict = [&](const std::int32_t* mods, size_t count, std::int32_t req1, std::int32_t req2) {
+			for (size_t i = 0; i < count; ++i) {
+				if (checkMod(mods[i]) != (mods[i] == req1 || mods[i] == req2))
+					return false;
+			}
+			return true;
+		};
+
+		bool pressed = false;
+
+		if (h.kKey != 0 && IsInputDown(h.kKey)) {
+			if (checkStrict(kbMods, std::size(kbMods), h.kMod1, h.kMod2))
 				pressed = true;
 		}
-		if (!pressed && h.gKey != 0) {
-			if (IsInputDown(h.gKey) && checkMod(h.gMod1) && checkMod(h.gMod2))
+
+		if (!pressed && h.gKey != 0 && IsInputDown(h.gKey)) {
+			if (checkStrict(gpMods, std::size(gpMods), h.gMod1, h.gMod2))
 				pressed = true;
 		}
 
