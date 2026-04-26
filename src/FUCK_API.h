@@ -176,6 +176,7 @@ struct FUCK_Interface
 	void (*PopFont)();
 	void (*SuspendRendering)(bool);
 	void (*SetMenuOpen)(bool);
+	bool (*IsMenuOpen)();
 
 	// IO
 	float (*GetDeltaTime)();
@@ -222,8 +223,8 @@ struct FUCK_Interface
 	void (*LoadTranslation)(const char*);
 	const char* (*GetTranslation)(const char*);
 	void (*SanitizePath)(char*, const char*, size_t);
-	void (*LoadPluginINI)(const wchar_t*, const wchar_t*, void*, void (*)(CSimpleIniA&, void*));
-	void (*SavePluginINI)(const wchar_t*, void*, void (*)(CSimpleIniA&, void*));
+	void (*LoadPluginINI)(const char*, const char*, void*, void (*)(CSimpleIniA&, void*));
+	void (*SavePluginINI)(const char*, void*, void (*)(CSimpleIniA&, void*));
 	void (*PushItemFlag)(FUCK::ItemFlags, bool);
 	void (*PopItemFlag)();
 	void (*HelpMarker)(const char*);
@@ -447,6 +448,12 @@ namespace FUCK
 	{
 		if (auto i = GetInterface())
 			i->SetMenuOpen(open);
+	}
+	inline bool IsMenuOpen()
+	{
+		if (auto i = GetInterface())
+			return i->IsMenuOpen();
+		return false;
 	}
 
 	inline ImFont* GetFont(Font font) { return GetInterface() ? GetInterface()->GetFont(font) : nullptr; }
@@ -886,8 +893,8 @@ namespace FUCK
 			i->TextUnformatted(text, text_end);
 	}
 
-	inline bool ButtonIconWithLabel(const char* label, ImTextureID textureID, const ImVec2& size, bool alignFar = true, bool labelLeft = true) { return GetInterface() ? GetInterface()->ButtonIconWithLabel(label, (void*)textureID, size.x, size.y, alignFar, labelLeft) : false; }
-	inline bool ImageButton(const char* str_id, ImTextureID user_texture_id, const ImVec2& image_size, const ImVec4* tint = nullptr) { return GetInterface() ? GetInterface()->ImageButton(str_id, (void*)user_texture_id, image_size.x, image_size.y, tint) : false; }
+	inline bool ButtonIconWithLabel(const char* label, ImTextureID textureID, const ImVec2& size, bool alignFar = true, bool labelLeft = true) { return GetInterface() ? GetInterface()->ButtonIconWithLabel(label, reinterpret_cast<void*>(textureID), size.x, size.y, alignFar, labelLeft) : false; }
+	inline bool ImageButton(const char* str_id, ImTextureID user_texture_id, const ImVec2& image_size, const ImVec4* tint = nullptr) { return GetInterface() ? GetInterface()->ImageButton(str_id, reinterpret_cast<void*>(user_texture_id), image_size.x, image_size.y, tint) : false; }
 	inline void Stepper(const char* label, const char* text, bool* outLeft, bool* outRight)
 	{
 		if (auto i = GetInterface())
@@ -1012,9 +1019,9 @@ namespace FUCK
 		if (auto i = GetInterface()) {
 			if (outSize)
 				i->GetIconSizeForKey(key, &outSize->x, &outSize->y);
-			return (ImTextureID)i->GetIconForKey(key);
+			return reinterpret_cast<ImTextureID>(i->GetIconForKey(key));
 		}
-		return (ImTextureID)0;
+		return static_cast<ImTextureID>(0);
 	}
 	inline void Spinner(const char* label, float radius, float thickness, const ImVec4& color)
 	{
@@ -1185,7 +1192,7 @@ namespace FUCK
 	class PluginSettings
 	{
 	public:
-		PluginSettings(const wchar_t* a_defaultPath, const wchar_t* a_userPath) :
+		PluginSettings(const char* a_defaultPath, const char* a_userPath) :
 			_defaultPath(a_defaultPath), _userPath(a_userPath) {}
 		using INIFunc = std::function<void(CSimpleIniA&)>;
 
@@ -1205,8 +1212,8 @@ namespace FUCK
 		}
 
 	private:
-		const wchar_t* _defaultPath;
-		const wchar_t* _userPath;
+		const char* _defaultPath;
+		const char* _userPath;
 	};
 
 	/// @brief RAII Wrapper for listening to Skyrim UI Menu events.
@@ -1451,54 +1458,32 @@ namespace FUCK
 	}
 
 	template <typename T>
-	bool EnumStepper(const char* label, T* current_val, const std::vector<std::string>& items)
+	bool EnumStepper(const char* label, T* current_val, const std::vector<std::string>& items, bool a_translate = true)
 	{
 		if (items.empty())
 			return false;
+
 		int idx = static_cast<int>(*current_val);
 		if (idx < 0)
 			idx = 0;
-		if (idx >= (int)items.size())
-			idx = (int)items.size() - 1;
+		if (idx >= static_cast<int>(items.size()))
+			idx = static_cast<int>(items.size()) - 1;
+
 		bool l = false, r = false;
-		Stepper(label, Translate(items[idx].c_str()), &l, &r);
+
+		const char* displayText = a_translate ? Translate(items[idx].c_str()) : items[idx].c_str();
+
+		Stepper(label, displayText, &l, &r);
+
 		if (l) {
-			*current_val = static_cast<T>((idx - 1 + (int)items.size()) % (int)items.size());
+			*current_val = static_cast<T>((idx - 1 + static_cast<int>(items.size())) % static_cast<int>(items.size()));
 			return true;
 		}
 		if (r) {
-			*current_val = static_cast<T>((idx + 1) % (int)items.size());
+			*current_val = static_cast<T>((idx + 1) % static_cast<int>(items.size()));
 			return true;
 		}
 		return false;
-	}
-
-	template <class E>
-	bool EnumSlider(const char* label, E* index, const std::vector<std::string>& enum_names, bool a_translate = true)
-	{
-		bool value_changed = false;
-		std::size_t uIndex = (std::is_enum_v<E>) ? static_cast<std::size_t>(*index) : *index;
-		LeftLabel(label);
-		std::string centerText = a_translate ? std::string(Translate(enum_names[uIndex].c_str())) : enum_names[uIndex];
-		bool hovered, clickedLeft, clickedRight;
-		if (auto i = GetInterface())
-			i->CenteredTextWithArrows(label, centerText.c_str(), &hovered, &clickedLeft, &clickedRight);
-		else
-			return false;
-
-		if (hovered || IsWidgetFocused(label)) {
-			const bool pL = clickedLeft || ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft);
-			const bool pR = clickedRight || ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight);
-			if (pL)
-				uIndex = (uIndex - 1 + enum_names.size()) % enum_names.size();
-			if (pR)
-				uIndex = (uIndex + 1) % enum_names.size();
-			if (pL || pR) {
-				value_changed = true;
-				*index = static_cast<E>(uIndex);
-			}
-		}
-		return value_changed;
 	}
 }  // namespace FUCK
 
