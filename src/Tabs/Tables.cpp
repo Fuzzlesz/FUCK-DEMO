@@ -86,7 +86,7 @@ void DemoState::DrawTablesTab()
 					break;
 				default:
 					char buf[32];
-					snprintf(buf, 32, "$DEMO_Type_Generic"_T, (int)form->GetFormType());
+					snprintf(buf, 32, "$DEMO_Type_Generic"_T, static_cast<int>(form->GetFormType()));
 					newRow.typeStr = buf;
 					break;
 				}

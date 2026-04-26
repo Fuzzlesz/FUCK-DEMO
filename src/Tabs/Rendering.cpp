@@ -123,10 +123,10 @@ void DemoState::DrawOverlays()
 	ImU32 col = ImGui::ColorConvertFloat4ToU32(ImVec4(_overlayColor[0], _overlayColor[1], _overlayColor[2], _overlayColor[3]));
 
 	if (_overlayType == 0) {  // Grid
-		FUCK::DrawGrid(_overlayThickness, col, (float)_gridRows, (float)_gridCols, _spiralRot);
+		FUCK::DrawGrid(_overlayThickness, col, static_cast<float>(_gridRows), static_cast<float>(_gridCols), _spiralRot);
 	} else if (_overlayType == 1) {  // Crosshair
-		FUCK::DrawCrosshair(_overlayThickness, col, (float)_gridRows, (float)_gridCols);
-	} else if (_overlayType == 2) {       // Golden Spiral
+		FUCK::DrawCrosshair(_overlayThickness, col, static_cast<float>(_gridRows), static_cast<float>(_gridCols));
+	} else if (_overlayType == 2) {  // Golden Spiral
 		FUCK::DrawGoldenSpiral(_overlayThickness, col, _spiralAnchor, _spiralTurns, _spiralRot, _spiralScale, _showSquares);
 	} else if (_overlayType == 3) {  // Golden Grid
 		static int subDivs = 0;

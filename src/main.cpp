@@ -62,7 +62,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 			// Connection logic
 			if (FUCK::Connect()) {
 				SKSE::log::info("Connected to FUCK API");
-				(void)DemoState::GetSingleton(); // Registration happens at top of DEMO.cpp
+				static_cast<void>(DemoState::GetSingleton());
 				FUCK::LoadTranslation("FUCK-DEMO");
 				SKSE::log::info("FUCK-DEMO Registered.");
 			}

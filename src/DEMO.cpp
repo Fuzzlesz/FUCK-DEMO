@@ -180,9 +180,9 @@ void DemoState::LoadSettings()
 		_chkFarA = ini.GetBoolValue("Widgets", "ChkFarA", _chkFarA);
 		_chkFarB = ini.GetBoolValue("Widgets", "ChkFarB", _chkFarB);
 		_toggleState = ini.GetBoolValue("Widgets", "ToggleState", _toggleState);
-		_sliderVal = (float)ini.GetDoubleValue("Widgets", "SliderVal", _sliderVal);
+		_sliderVal = static_cast<float>(ini.GetDoubleValue("Widgets", "SliderVal", _sliderVal));
 		_intVal = ini.GetLongValue("Widgets", "IntVal", _intVal);
-		_dragFloat = (float)ini.GetDoubleValue("Widgets", "DragFloat", _dragFloat);
+		_dragFloat = static_cast<float>(ini.GetDoubleValue("Widgets", "DragFloat", _dragFloat));
 		_dragInt = ini.GetLongValue("Widgets", "DragInt", _dragInt);
 		const char* inputBuf = ini.GetValue("Widgets", "InputBuffer", nullptr);
 		if (inputBuf) {
@@ -196,22 +196,22 @@ void DemoState::LoadSettings()
 		double h = ini.GetDoubleValue("Overlay", "Height", -1.0);
 
 		if (x != -1.0 && y != -1.0) {
-			_overlay._windowPos = { (float)x, (float)y };
+			_overlay._windowPos = { static_cast<float>(x), static_cast<float>(y) };
 			_overlay._lastSavedPos = _overlay._windowPos;
 			_overlay._hasLoadedPos = true;
 		}
 		if (w != -1.0 && h != -1.0) {
-			_overlay._windowSize = { (float)w, (float)h };
+			_overlay._windowSize = { static_cast<float>(w), static_cast<float>(h) };
 			_overlay._lastSavedSize = _overlay._windowSize;
 		}
-
+		
 		// Keys
-		_overlay._toggleHotkey.kKey = (std::uint32_t)ini.GetLongValue("Overlay", "Hotkey", _overlay._toggleHotkey.kKey);
-		_overlay._toggleHotkey.kMod1 = (std::int32_t)ini.GetLongValue("Overlay", "Modifier1", _overlay._toggleHotkey.kMod1);
-		_overlay._toggleHotkey.kMod2 = (std::int32_t)ini.GetLongValue("Overlay", "Modifier2", _overlay._toggleHotkey.kMod2);
-		_overlay._toggleHotkey.gKey = (std::uint32_t)ini.GetLongValue("Overlay", "GPHotkey", _overlay._toggleHotkey.gKey);
-		_overlay._toggleHotkey.gMod1 = (std::int32_t)ini.GetLongValue("Overlay", "GPModifier1", _overlay._toggleHotkey.gMod1);
-		_overlay._toggleHotkey.gMod2 = (std::int32_t)ini.GetLongValue("Overlay", "GPModifier2", _overlay._toggleHotkey.gMod2);
+		_overlay._toggleHotkey.kKey = static_cast<std::uint32_t>(ini.GetLongValue("Overlay", "Hotkey", _overlay._toggleHotkey.kKey));
+		_overlay._toggleHotkey.kMod1 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "Modifier1", _overlay._toggleHotkey.kMod1));
+		_overlay._toggleHotkey.kMod2 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "Modifier2", _overlay._toggleHotkey.kMod2));
+		_overlay._toggleHotkey.gKey = static_cast<std::uint32_t>(ini.GetLongValue("Overlay", "GPHotkey", _overlay._toggleHotkey.gKey));
+		_overlay._toggleHotkey.gMod1 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "GPModifier1", _overlay._toggleHotkey.gMod1));
+		_overlay._toggleHotkey.gMod2 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "GPModifier2", _overlay._toggleHotkey.gMod2));
 
 		// Flags
 		_overlay._reqBlur = ini.GetBoolValue("OverlayFlags", "Blur", _overlay._reqBlur);
@@ -221,8 +221,8 @@ void DemoState::LoadSettings()
 		_overlay._reqCloseOnMenu = ini.GetBoolValue("OverlayFlags", "CloseOnMenu", _overlay._reqCloseOnMenu);
 
 		// Second Window
-		_secondOverlay._pos.x = (float)ini.GetDoubleValue("SecondWindow", "X", _secondOverlay._pos.x);
-		_secondOverlay._pos.y = (float)ini.GetDoubleValue("SecondWindow", "Y", _secondOverlay._pos.y);
+		_secondOverlay._pos.x = static_cast<float>(ini.GetDoubleValue("SecondWindow", "X", _secondOverlay._pos.x));
+		_secondOverlay._pos.y = static_cast<float>(ini.GetDoubleValue("SecondWindow", "Y", _secondOverlay._pos.y));
 	});
 }
 
