@@ -399,11 +399,13 @@ void DemoOverlay::Draw()
 		_toggleHotkey.gKey = 0;
 		_toggleHotkey.gMod1 = -1;
 		_toggleHotkey.gMod2 = -1;
+		DemoState::GetSingleton()->SaveSettings();
 	}
 
 	FUCK::SameLine();
 	if (FUCK::Button("$DEMO_UnmapHotkey"_T)) {
 		_toggleHotkey.Clear();
+		DemoState::GetSingleton()->SaveSettings();
 	}
 
 	FUCK::Spacing();
