@@ -209,6 +209,7 @@ private:
 	float _spiralScale = 1.0f;
 	float _spiralTurns = 6.0f;
 	bool _showSquares = false;
+	bool _triMirror = false;
 
 	// Input Capture Demo
 	int _keyTestIndex = 1;

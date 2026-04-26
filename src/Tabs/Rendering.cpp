@@ -76,8 +76,7 @@ void DemoState::DrawRenderingTab()
 			static int subDivs = 0;
 			FUCK::SliderInt("$DEMO_Subdivisions"_T, &subDivs, 0, 3);
 		} else if (_overlayType == 4) {  // Triangle
-			static bool triMirror = false;
-			FUCK::Checkbox("$DEMO_Mirror"_T, &triMirror);
+			FUCK::Checkbox("$DEMO_Mirror"_T, &_triMirror);
 		}
 	}
 
@@ -132,7 +131,6 @@ void DemoState::DrawOverlays()
 		static int subDivs = 0;
 		FUCK::DrawGoldenGrid(_overlayThickness, col, subDivs);
 	} else if (_overlayType == 4) {  // Triangle
-		static bool triMirror = false;
-		FUCK::DrawTriangle(_overlayThickness, col, triMirror);
+		FUCK::DrawTriangle(_overlayThickness, col, _triMirror);
 	}
 }
