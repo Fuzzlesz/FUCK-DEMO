@@ -4,8 +4,8 @@
 inline FUCK::PluginSettings& GetSettings()
 {
 	static FUCK::PluginSettings s{
-		L"Data/SKSE/Plugins/FUCK_DEMO.ini",
-		L"Data/SKSE/Plugins/FUCK_DEMO_Custom.ini"
+		"Data/SKSE/Plugins/FUCK_DEMO.ini",
+		"Data/SKSE/Plugins/FUCK_DEMO_Custom.ini"
 	};
 	return s;
 }
@@ -13,6 +13,7 @@ inline FUCK::PluginSettings& GetSettings()
 // ==========================================
 // Secondary Simple Overlay
 // ==========================================
+
 class SimpleOverlay : public FUCK::IWindow
 {
 public:
@@ -51,6 +52,7 @@ public:
 // ==========================================
 // Demo Overlay Window (Main)
 // ==========================================
+
 class DemoOverlay : public FUCK::IWindow
 {
 public:
@@ -106,6 +108,7 @@ private:
 // ==========================================
 // Demo State Manager & Tools
 // ==========================================
+
 class DemoState : public REX::Singleton<DemoState>
 {
 public:
@@ -178,12 +181,12 @@ private:
 	bool _chkFarA = false;
 	bool _chkFarB = true;
 
-	bool _toggleState = false;
-	float _sliderVal = 50.0f;
-	int _intVal = 5;
-	float _dragFloat = 0.5f;
-	int _dragInt = 10;
-	char _inputBuffer[256] = { 0 };
+	bool         _toggleState = false;
+	float        _sliderVal = 50.0f;
+	std::int32_t _intVal = 5;
+	float        _dragFloat = 0.5f;
+	std::int32_t _dragInt = 10;
+	char         _inputBuffer[256] = { 0 };
 
 	// Feature Demos
 	int _iconBtnClicks = 0;

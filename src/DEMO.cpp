@@ -92,11 +92,8 @@ bool DemoState::OnAsyncInput(const void* inputEvent)
 		std::uint32_t key = 0;
 		std::int32_t mod1 = -1, mod2 = -1;
 
-		auto result = FUCK::GetInputBind(inputEvent, &key, &mod1, &mod2);
-
-		if (result == FUCK::BindResult::kBound) {
+		if (FUCK::GetInputBind(inputEvent, &key, &mod1, &mod2) == FUCK::BindResult::kBound) {
 			_lastPressedKey = key;
-			return true;
 		}
 		return true;
 	}
@@ -229,6 +226,7 @@ void DemoState::LoadSettings()
 void DemoState::SaveSettings()
 {
 	GetSettings().Save([this](CSimpleIniA& ini) {
+		// General Widgets
 		ini.SetBoolValue("Widgets", "ChkNear", _chkNear);
 		ini.SetBoolValue("Widgets", "MutexA", _chkMutexA);
 		ini.SetBoolValue("Widgets", "MutexB", _chkMutexB);
@@ -241,11 +239,13 @@ void DemoState::SaveSettings()
 		ini.SetLongValue("Widgets", "DragInt", _dragInt);
 		ini.SetValue("Widgets", "InputBuffer", _inputBuffer);
 
+		// Overlay Position & Size
 		ini.SetDoubleValue("Overlay", "X", _overlay._windowPos.x);
 		ini.SetDoubleValue("Overlay", "Y", _overlay._windowPos.y);
 		ini.SetDoubleValue("Overlay", "Width", _overlay._windowSize.x);
 		ini.SetDoubleValue("Overlay", "Height", _overlay._windowSize.y);
 
+		// Overlay Keys
 		ini.SetLongValue("Overlay", "Hotkey", _overlay._toggleHotkey.kKey);
 		ini.SetLongValue("Overlay", "Modifier1", _overlay._toggleHotkey.kMod1);
 		ini.SetLongValue("Overlay", "Modifier2", _overlay._toggleHotkey.kMod2);
@@ -253,14 +253,22 @@ void DemoState::SaveSettings()
 		ini.SetLongValue("Overlay", "GPModifier1", _overlay._toggleHotkey.gMod1);
 		ini.SetLongValue("Overlay", "GPModifier2", _overlay._toggleHotkey.gMod2);
 
+		// Overlay Flags
 		ini.SetBoolValue("OverlayFlags", "Blur", _overlay._reqBlur);
 		ini.SetBoolValue("OverlayFlags", "HideHUD", _overlay._reqHideHUD);
 		ini.SetBoolValue("OverlayFlags", "BlockVanity", _overlay._reqBlockVanity);
 		ini.SetBoolValue("OverlayFlags", "CloseOnEsc", _overlay._reqCloseOnEsc);
 		ini.SetBoolValue("OverlayFlags", "CloseOnMenu", _overlay._reqCloseOnMenu);
 
+		// Second Window
 		ini.SetDoubleValue("SecondWindow", "X", _secondOverlay._pos.x);
 		ini.SetDoubleValue("SecondWindow", "Y", _secondOverlay._pos.y);
+
+		// HUD Widget
+		ini.SetDoubleValue("HudWidget", "X", static_cast<double>(_hudWidget._pos.x));
+		ini.SetDoubleValue("HudWidget", "Y", static_cast<double>(_hudWidget._pos.y));
+		ini.SetBoolValue("HudWidget", "KeepOpen", _hudWidget._keepOpen);
+		ini.SetDoubleValue("HudWidget", "Scale", static_cast<double>(_hudWidget._scale));
 	});
 }
 
