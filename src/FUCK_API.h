@@ -68,7 +68,10 @@ namespace FUCK
 		kNoBackground = 1 << 8,
 		kNoDecoration = 1 << 9,
 		kCustomRender = 1 << 10,
-		kExtendBorder = 1 << 11
+		kExtendBorder = 1 << 11,
+		kIgnoreUserScale = 1 << 12,
+		kNoResize = 1 << 13,
+		kAutoResize = 1 << 14
 	};
 
 	enum class TableFlags
@@ -118,14 +121,27 @@ namespace FUCK
 		kNone = 0,
 		kNoTabStop = 1 << 0,
 		kButtonRepeat = 1 << 1,
-		kDisabled = 1 << 2,
-		kNoNav = 1 << 3
+		kNoNav = 1 << 2
 	};
 
 	inline WindowFlags operator|(WindowFlags a, WindowFlags b) { return static_cast<WindowFlags>(static_cast<int>(a) | static_cast<int>(b)); }
 	inline bool operator&(WindowFlags a, WindowFlags b) { return (static_cast<int>(a) & static_cast<int>(b)) != 0; }
 	inline TableFlags operator|(TableFlags a, TableFlags b) { return static_cast<TableFlags>(static_cast<int>(a) | static_cast<int>(b)); }
 	inline TableColumnFlags operator|(TableColumnFlags a, TableColumnFlags b) { return static_cast<TableColumnFlags>(static_cast<int>(a) | static_cast<int>(b)); }
+	inline ItemFlags operator|(ItemFlags a, ItemFlags b) { return static_cast<ItemFlags>(static_cast<int>(a) | static_cast<int>(b)); }
+	inline bool operator&(ItemFlags a, ItemFlags b) { return (static_cast<int>(a) & static_cast<int>(b)) != 0; }
+
+	enum class HotkeyFlags : int
+	{
+		kNone = 0,
+		kAlignNear = 1 << 0,
+		kLabelRight = 1 << 1,
+		kCtrlToRebind = 1 << 2,
+		kAlwaysHighlight = 1 << 3,
+		kNoModifiers = 1 << 4
+	};
+	inline HotkeyFlags operator|(HotkeyFlags a, HotkeyFlags b) { return static_cast<HotkeyFlags>(static_cast<int>(a) | static_cast<int>(b)); }
+	inline bool operator&(HotkeyFlags a, HotkeyFlags b) { return (static_cast<int>(a) & static_cast<int>(b)) != 0; }
 
 	struct ManagedHotkey
 	{
@@ -134,6 +150,8 @@ namespace FUCK
 		std::int32_t kMod2 = -1, gMod2 = -1;
 		bool isBinding = false;
 		bool wasTriggered = false;
+		bool waitForRelease = false;
+		bool disallowModifiers = false;  // Single-key binds only, modifier keys treated as bindable.
 
 		void Clear()
 		{
@@ -141,6 +159,7 @@ namespace FUCK
 			kMod1 = gMod1 = kMod2 = gMod2 = -1;
 			isBinding = false;
 			wasTriggered = false;
+			waitForRelease = false;
 		}
 	};
 	
@@ -196,6 +215,7 @@ struct FUCK_Interface
 	// Display
 	float (*GetResolutionScale)();
 	void (*GetDisplaySize)(float*, float*);
+	void (*TranslateScaleformToScreen)(float, float, float*, float*);
 	ImFont* (*GetFont)(FUCK::Font);
 	void (*PushFont)(ImFont*, float);
 	void (*PopFont)();
@@ -225,6 +245,7 @@ struct FUCK_Interface
 	void (*SetCursorPos)(float, float);
 	void (*GetCursorScreenPos)(float*, float*);
 	void (*SetCursorScreenPos)(float, float);
+	void (*AlignTextToFramePadding)();
 	void (*GetContentRegionAvail)(float*, float*);
 	float (*CalcItemWidth)();
 	void (*CalcTextSize)(const char*, const char*, bool, float, float*, float*);
@@ -248,8 +269,9 @@ struct FUCK_Interface
 	void (*LoadTranslation)(const char*);
 	const char* (*GetTranslation)(const char*);
 	void (*SanitizePath)(char*, const char*, size_t);
-	void (*LoadPluginINI)(const char*, const char*, void*, void (*)(CSimpleIniA&, void*));
-	void (*SavePluginINI)(const char*, void*, void (*)(CSimpleIniA&, void*));
+	void (*LoadPluginINI)(const char* pluginName, void* userdata, void (*callback)(CSimpleIniA&, void*));
+	void (*SavePluginINI)(const char* pluginName, void* userdata, void (*callback)(CSimpleIniA&, void*));
+	void (*LoadPluginINIDefaults)(const char*, void*, void (*)(CSimpleIniA&, void*));
 	void (*PushItemFlag)(FUCK::ItemFlags, bool);
 	void (*PopItemFlag)();
 	void (*HelpMarker)(const char*);
@@ -288,13 +310,14 @@ struct FUCK_Interface
 
 	bool (*IsBinding)();
 	void (*AbortBinding)();
-	void (*StartBinding)(std::uint32_t, std::int32_t, std::int32_t);
+	void (*StartBinding)(std::uint32_t, std::int32_t, std::int32_t, bool);
 	FUCK::BindResult (*UpdateBinding)(const void*, std::uint32_t*, std::int32_t*, std::int32_t*);
 	FUCK::BindResult (*GetInputBind)(const void*, std::uint32_t*, std::int32_t*, std::int32_t*);
 
-	void (*DrawManagedHotkey)(const char*, FUCK::ManagedHotkey*, bool);
+	bool (*DrawManagedHotkey)(const char*, FUCK::ManagedHotkey*, int, float, float); 
 	bool (*UpdateManagedHotkey)(const void*, FUCK::ManagedHotkey*);
 	bool (*ProcessManagedHotkey)(const void*, FUCK::ManagedHotkey*);
+	bool (*IsManagedHotkeyDown)(FUCK::ManagedHotkey*);
 
 	// Interaction
 	bool (*IsItemHovered)(int);
@@ -307,6 +330,8 @@ struct FUCK_Interface
 	bool (*IsWindowHovered)(int);
 	bool (*IsMouseDown)(int);
 	bool (*IsMouseReleased)(int);
+	bool (*IsKeyDown)(ImGuiKey);
+	bool (*IsKeyPressed)(ImGuiKey, bool);
 	void (*SetKeyboardFocusHere)(int);
 	void (*SetItemDefaultFocus)();
 
@@ -315,6 +340,7 @@ struct FUCK_Interface
 	void (*DrawRectFilled)(const ImVec2&, const ImVec2&, const ImVec4&, float);
 	void (*DrawLine)(const ImVec2&, const ImVec2&, const ImVec4&, float);
 	void (*DrawImage)(void*, const ImVec2&, const ImVec2&, const ImVec2&, const ImVec4&);
+	void (*DrawImageQuad)(void*, const ImVec2&, const ImVec2&, const ImVec2&, const ImVec2&, const ImVec2&, const ImVec2&, const ImVec2&, const ImVec2&, const ImVec4&);
 	void (*AddImage)(void*, const ImVec2&, const ImVec2&, const ImVec2&, const ImVec2&, const ImVec4&);
 	void (*DrawBackgroundImage)(void*, float);
 	void (*DrawBackgroundLine)(float, float, float, float, unsigned int, float);
@@ -330,6 +356,8 @@ struct FUCK_Interface
 	void (*SetNextWindowSize)(float, float, int);
 	void (*GetWindowPos)(float*, float*);
 	void (*GetWindowSize)(float*, float*);
+	void (*SetWindowPos)(float, float, int);
+	void (*SetWindowSize)(float, float, int);
 	bool (*BeginWindow)(const char*, bool*, int);
 	void (*EndWindow)();
 	void (*ExtendWindowPastBorder)();
@@ -337,6 +365,8 @@ struct FUCK_Interface
 	void (*EndChild)();
 	bool (*TreeNode)(const char*);
 	void (*TreePop)();
+	bool (*BeginPopupContextItem)(const char*, int);
+	void (*EndPopup)();
 
 	// Widgets
 	bool (*Button)(const char*);
@@ -469,6 +499,22 @@ namespace FUCK
 		}
 		return ImVec2(0, 0);
 	}
+
+	/// @brief Converts standard 1280x720 Flash Stage coordinates into physical screen pixels (accounting for Aspect Ratio borders).
+	inline ImVec2 TranslateScaleformToScreen(float stageX, float stageY)
+	{
+		ImVec2 screenPos;
+		if (auto i = GetInterface())
+			i->TranslateScaleformToScreen(stageX, stageY, &screenPos.x, &screenPos.y);
+		return screenPos;
+	}
+
+	/// @brief Converts standard 1280x720 Flash Stage coordinates into physical screen pixels (accounting for Aspect Ratio borders).
+	inline ImVec2 TranslateScaleformToScreen(const ImVec2& stagePos)
+	{
+		return TranslateScaleformToScreen(stagePos.x, stagePos.y);
+	}
+
 	inline void SuspendRendering(bool suspend)
 	{
 		if (auto i = GetInterface())
@@ -582,6 +628,11 @@ namespace FUCK
 	{
 		if (auto i = GetInterface())
 			i->SetCursorScreenPos(pos.x, pos.y);
+	}
+	inline void AlignTextToFramePadding()
+	{
+		if (auto i = GetInterface())
+			i->AlignTextToFramePadding();
 	}
 	inline ImVec2 GetContentRegionAvail()
 	{
@@ -777,10 +828,10 @@ namespace FUCK
 			i->AbortBinding();
 	}
 	inline bool IsBinding() { return GetInterface() ? GetInterface()->IsBinding() : false; }
-	inline void StartBinding(std::uint32_t key, std::int32_t mod1, std::int32_t mod2)
+	inline void StartBinding(std::uint32_t key, std::int32_t mod1, std::int32_t mod2, bool disallowModifiers = false)
 	{
 		if (auto i = GetInterface())
-			i->StartBinding(key, mod1, mod2);
+			i->StartBinding(key, mod1, mod2, disallowModifiers);
 	}
 	inline BindResult UpdateBinding(const void* inputEvent, std::uint32_t* outKey, std::int32_t* outMod1, std::int32_t* outMod2) { return GetInterface() ? GetInterface()->UpdateBinding(inputEvent, outKey, outMod1, outMod2) : BindResult::kNone; }
 	inline BindResult GetInputBind(const void* inputEvent, std::uint32_t* outKey, std::int32_t* outMod1, std::int32_t* outMod2) { return GetInterface() ? GetInterface()->GetInputBind(inputEvent, outKey, outMod1, outMod2) : BindResult::kNone; }
@@ -799,6 +850,8 @@ namespace FUCK
 	inline bool IsWindowHovered(int flags = 0) { return GetInterface() ? GetInterface()->IsWindowHovered(flags) : false; }
 	inline bool IsMouseDown(int button) { return GetInterface() ? GetInterface()->IsMouseDown(button) : false; }
 	inline bool IsMouseReleased(int button) { return GetInterface() ? GetInterface()->IsMouseReleased(button) : false; }
+	inline bool IsKeyDown(ImGuiKey key) { return GetInterface() ? GetInterface()->IsKeyDown(key) : false; }
+	inline bool IsKeyPressed(ImGuiKey key, bool repeat = true) { return GetInterface() ? GetInterface()->IsKeyPressed(key, repeat) : false; }
 	inline void SetKeyboardFocusHere(int offset = 0)
 	{
 		if (auto i = GetInterface())
@@ -964,6 +1017,16 @@ namespace FUCK
 		}
 		return ImVec2(0, 0);
 	}
+	inline void SetWindowPos(const ImVec2& pos, int cond = 0)
+	{
+		if (auto i = GetInterface())
+			i->SetWindowPos(pos.x, pos.y, cond);
+	}
+	inline void SetWindowSize(const ImVec2& size, int cond = 0)
+	{
+		if (auto i = GetInterface())
+			i->SetWindowSize(size.x, size.y, cond);
+	}
 	inline void SetNextWindowPos(const ImVec2& pos, int cond = 0, const ImVec2& pivot = ImVec2(0, 0))
 	{
 		if (auto i = GetInterface())
@@ -992,6 +1055,16 @@ namespace FUCK
 			i->TreePop();
 	}
 	inline bool CollapsingHeader(const char* label, int flags = 0) { return GetInterface() ? GetInterface()->CollapsingHeader(label, flags) : false; }
+
+	inline bool BeginPopupContextItem(const char* str_id = nullptr, int mouse_button = 1)
+	{
+		return GetInterface() ? GetInterface()->BeginPopupContextItem(str_id, mouse_button) : false;
+	}
+	inline void EndPopup()
+	{
+		if (auto i = GetInterface())
+			i->EndPopup();
+	}
 
 	inline bool BeginTabBar(const char* str_id, int flags = 0) { return GetInterface() ? GetInterface()->BeginTabBar(str_id, flags) : false; }
 	inline void EndTabBar()
@@ -1092,6 +1165,11 @@ namespace FUCK
 	{
 		if (auto i = GetInterface())
 			i->DrawImage((void*)textureId, size, uv0, uv1, tint_col);
+	}
+	inline void DrawImageQuad(ImTextureID textureId, const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, const ImVec2& uv1, const ImVec2& uv2, const ImVec2& uv3, const ImVec2& uv4, const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
+	{
+		if (auto i = GetInterface())
+			i->DrawImageQuad((void*)textureId, p1, p2, p3, p4, uv1, uv2, uv3, uv4, tint_col);
 	}
 	inline void AddImage(ImTextureID textureId, const ImVec2& min, const ImVec2& max, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& col = ImVec4(1, 1, 1, 1))
 	{
@@ -1227,8 +1305,8 @@ namespace FUCK
 	class PluginSettings
 	{
 	public:
-		PluginSettings(const char* a_defaultPath, const char* a_userPath) :
-			_defaultPath(a_defaultPath), _userPath(a_userPath) {}
+		PluginSettings(const char* a_pluginName) :
+			_pluginName(a_pluginName) {}
 		using INIFunc = std::function<void(CSimpleIniA&)>;
 
 		void Load(INIFunc a_func) const
@@ -1236,19 +1314,28 @@ namespace FUCK
 			if (!a_func)
 				return;
 			if (auto* i = GetInterface())
-				i->LoadPluginINI(_defaultPath, _userPath, &a_func, [](CSimpleIniA& ini, void* ud) { (*static_cast<INIFunc*>(ud))(ini); });
+				i->LoadPluginINI(_pluginName, &a_func, [](CSimpleIniA& ini, void* ud) { (*static_cast<INIFunc*>(ud))(ini); });
 		}
+
 		void Save(INIFunc a_func) const
 		{
 			if (!a_func)
 				return;
 			if (auto* i = GetInterface())
-				i->SavePluginINI(_userPath, &a_func, [](CSimpleIniA& ini, void* ud) { (*static_cast<INIFunc*>(ud))(ini); });
+				i->SavePluginINI(_pluginName, &a_func, [](CSimpleIniA& ini, void* ud) { (*static_cast<INIFunc*>(ud))(ini); });
+		}
+
+		/// @brief Loads the default shipped INI, ignoring user settings.
+		void LoadDefaults(INIFunc a_func) const
+		{
+			if (!a_func)
+				return;
+			if (auto* i = GetInterface())
+				i->LoadPluginINIDefaults(_pluginName, &a_func, [](CSimpleIniA& ini, void* ud) { (*static_cast<INIFunc*>(ud))(ini); });
 		}
 
 	private:
-		const char* _defaultPath;
-		const char* _userPath;
+		const char* _pluginName;
 	};
 
 	/// @brief RAII Wrapper for listening to Skyrim UI Menu events.
@@ -1295,10 +1382,11 @@ namespace FUCK
 	};
 
 	/// @brief Used for assigning Hotkeys within the FUCK interface.
-	inline void DrawManagedHotkey(const char* label, ManagedHotkey& h, bool alignFar = true)
+	inline bool DrawManagedHotkey(const char* label, ManagedHotkey& h, HotkeyFlags flags = HotkeyFlags::kNone, float iconScale = 1.0f, float labelScale = 1.0f)
 	{
 		if (auto i = GetInterface())
-			i->DrawManagedHotkey(label, &h, alignFar);
+			return i->DrawManagedHotkey(label, &h, static_cast<int>(flags), iconScale, labelScale);
+		return false;
 	}
 
 	inline bool UpdateManagedHotkey(const void* e, ManagedHotkey& h)
@@ -1311,14 +1399,19 @@ namespace FUCK
 		return GetInterface() ? GetInterface()->ProcessManagedHotkey(e, &h) : false;
 	}
 
-	inline void AbortManagedHotkey(ManagedHotkey& h)
+	inline bool IsManagedHotkeyDown(ManagedHotkey & h)
+	{
+		return GetInterface() ? GetInterface()->IsManagedHotkeyDown(&h) : false;
+	}
+
+	inline void AbortManagedHotkey(ManagedHotkey & h)
 	{
 		if (h.isBinding) {
 			AbortBinding();
 			h.isBinding = false;
 		}
 	}
-	
+
 	// ------------------------------------------------------------------------
 	// Overloads & Templates
 	// ------------------------------------------------------------------------
@@ -1362,6 +1455,30 @@ namespace FUCK
 			DrawLine({ anchor.x - crossSize, anchor.y }, { anchor.x + crossSize, anchor.y }, anchorV4, 2.0f);
 			DrawLine({ anchor.x, anchor.y - crossSize }, { anchor.x, anchor.y + crossSize }, anchorV4, 2.0f);
 		}
+	}
+
+	/// @brief Helper for handling WASD Key widget nudging. Returns true if movement occurred, outputting the delta.
+	inline bool WASDNudge(float& outDeltaX, float& outDeltaY, bool isActiveOrHovered, float step = 1.0f, float sprintMult = 10.0f)
+	{
+		if (!isActiveOrHovered || IsMouseDown(0))
+			return false;
+
+		float moveStep = step / GetResolutionScale();
+		if (IsKeyDown(ImGuiMod_Shift))
+			moveStep = (step * sprintMult) / GetResolutionScale();
+
+		outDeltaX = 0.0f;
+		outDeltaY = 0.0f;
+		if (IsKeyPressed(ImGuiKey_W, true))
+			outDeltaY -= moveStep;
+		if (IsKeyPressed(ImGuiKey_S, true))
+			outDeltaY += moveStep;
+		if (IsKeyPressed(ImGuiKey_A, true))
+			outDeltaX -= moveStep;
+		if (IsKeyPressed(ImGuiKey_D, true))
+			outDeltaX += moveStep;
+
+		return (outDeltaX != 0.0f || outDeltaY != 0.0f);
 	}
 
 	inline bool Combo(const char* label, int* current_item, const std::vector<std::string>& items)
