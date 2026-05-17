@@ -3,10 +3,7 @@
 
 inline FUCK::PluginSettings& GetSettings()
 {
-	static FUCK::PluginSettings s{
-		"Data/SKSE/Plugins/FUCK_DEMO.ini",
-		"Data/SKSE/Plugins/FUCK_DEMO_Custom.ini"
-	};
+	static FUCK::PluginSettings s{ "FUCK-DEMO" };
 	return s;
 }
 
@@ -22,31 +19,43 @@ public:
 	bool		IsOpen() const override { return _isOpen; }
 	void		SetOpen(bool a_open) override { _isOpen = a_open; }
 
-	FUCK::WindowFlags GetFlags() const override
-	{
-		FUCK::WindowFlags f = FUCK::WindowFlags::kNoDecoration;
-		if (_passInput)
-			f = f | FUCK::WindowFlags::kPassInputToGame;
-		return f;
-	}
+	FUCK::WindowFlags GetFlags() const override;
 
 	ImVec2 GetDefaultPos() const override;
 	ImVec2 GetDefaultSize() const override;
 	bool GetRequestedPos(ImVec2& outPos) override;
 
-	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override
-	{
-		_pos = currentPos;
-		_size = currentSize;
-	}
+	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override;
 
 	bool _isOpen = false;
-	bool _passInput = false;
-
-	ImVec2 _pos{ 800.0f, 400.0f };
-	ImVec2 _size{ 400.0f, 300.0f };
-
 	IWindow* _parentWindow = nullptr;
+};
+
+// ==========================================
+// HUD Widget Demo
+// ==========================================
+
+class HudWidget : public FUCK::IWindow
+{
+public:
+	const char* Title() const override { return "$DEMO_HudWidgetTitle"_T; }
+	void        Draw() override;
+	bool        IsOpen() const override { return _isOpen; }
+	void        SetOpen(bool a_open) override { _isOpen = a_open; }
+
+	FUCK::WindowFlags GetFlags() const override;
+
+	ImVec2 GetDefaultPos() const override { return { 100.0f, 100.0f }; }
+	ImVec2 GetDefaultSize() const override;
+	bool GetRequestedPos(ImVec2& outPos) override;
+	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override;
+
+	bool _isOpen = false;
+	bool _wantOpen = false;
+	bool _hasLoadedPos = false;
+
+	ImVec2 _lastSavedPos{ -1.0f, -1.0f };
+	FUCK::Image _hudImage;
 };
 
 // ==========================================
@@ -56,7 +65,6 @@ public:
 class DemoOverlay : public FUCK::IWindow
 {
 public:
-	// --- IWindow Interface Implementation ---
 	const char*			Title() const override { return "$DEMO_OverlayTitleHint"_T; }
 	void				Draw() override;
 	bool				IsOpen() const override { return _isOpen; }
@@ -66,45 +74,18 @@ public:
 	ImVec2 GetDefaultSize() const override;
 	ImVec2 GetDefaultPos() const override;
 	bool GetRequestedPos(ImVec2& outPos) override;
-
-	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override
-	{
-		_windowPos = currentPos;
-		_windowSize = currentSize;
-	}
+	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override;
 
 	bool _isOpen = false;
 	bool _hasLoadedPos = false;
 
-	// Base Window Metrics
-	ImVec2 _windowPos{ 0.0f, 0.0f };
-	ImVec2 _windowSize{ 0.0f, 0.0f };
-
-	ImVec2 _lastSavedPos{ 0.0f, 0.0f };
-	ImVec2 _lastSavedSize{ 0.0f, 0.0f };
+	ImVec2 _lastSavedPos{ -1.0f, -1.0f };
+	ImVec2 _lastSavedSize{ -1.0f, -1.0f };
 
 	const ImVec2 _baseSize{ 430.0f, 855.0f };
 
-	FUCK::ManagedHotkey _toggleHotkey{ 35, 0, 42, -1, -1, -1 };
 	SimpleOverlay* _secondWindow = nullptr;
-
-private:
-	// Window Configuration Flags
-	bool _reqBlur = false;
-	bool _reqHideHUD = false;
-	bool _reqPauseHard = false;
-	bool _reqPauseSoft = false;
-	bool _reqCloseOnEsc = false;
-	bool _reqCloseOnMenu = false;
-	bool _reqPassInput = false;
-	bool _reqBlockVanity = false;
-	bool _reqNoBackground = false;
-	bool _reqNoDecoration = false;
-	bool _reqExtendBorder = false;
-
-	friend class DemoState;
 };
-
 // ==========================================
 // Demo State Manager & Tools
 // ==========================================
@@ -112,6 +93,66 @@ private:
 class DemoState : public REX::Singleton<DemoState>
 {
 public:
+	struct DemoConfig {
+		// Basic Widgets
+		bool chkNear = false;
+		bool chkMutexA = true;
+		bool chkMutexB = false;
+		bool chkFarA = false;
+		bool chkFarB = true;
+		bool toggleState = false;
+		float sliderVal = 50.0f;
+		std::int32_t intVal = 5;
+		float dragFloat = 0.5f;
+		std::int32_t dragInt = 10;
+		char inputBuffer[256] = { 0 };
+
+		// Overlays
+		ImVec2 overlayPos{ -1.0f, -1.0f };
+		ImVec2 overlaySize{ -1.0f, -1.0f };
+		bool reqBlur = false;
+		bool reqHideHUD = false;
+		bool reqPauseHard = false;
+		bool reqPauseSoft = false;
+		bool reqCloseOnEsc = false;
+		bool reqCloseOnMenu = false;
+		bool reqPassInput = false;
+		bool reqBlockVanity = false;
+		bool reqNoBackground = false;
+		bool reqNoDecoration = false;
+		bool reqExtendBorder = false;
+
+		ImVec2 secondOverlayPos{ 800.0f, 400.0f };
+		bool secondPassInput = false;
+
+		ImVec2 hudWidgetPos{ -1.0f, -1.0f };
+		bool hudKeepOpen = false;
+		float hudScale = 1.0f;
+		
+		// Rendering Overlays Demo
+		bool showOverlay = false;
+		int overlayType = 0;
+		float overlayThickness = 2.0f;
+		std::array<float, 4> overlayColor = { 1.0f, 1.0f, 1.0f, 0.5f };
+		int gridRows = 10;
+		int gridCols = 10;
+		int spiralAnchor = 0;
+		float spiralRot = 0.0f;
+		float spiralScale = 1.0f;
+		float spiralTurns = 6.0f;
+		bool showSquares = false;
+		bool triMirror = false;
+	};
+
+	struct HotkeyConfig {
+		std::uint32_t kKey = 35; // H
+		std::int32_t kMod1 = 42; // Shift
+		std::int32_t kMod2 = -1;
+		std::uint32_t gKey = 0;
+		std::int32_t gMod1 = -1;
+		std::int32_t gMod2 = -1;
+	};
+
 	DemoState();
 
 	void OnOpen();
@@ -121,6 +162,7 @@ public:
 	// Helper to save/load settings
 	void LoadSettings();
 	void SaveSettings();
+	void SaveKeybinds();
 
 	DemoOverlay* GetOverlay() { return &_overlay; }
 
@@ -158,6 +200,12 @@ public:
 		void		RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 	};
 
+	DemoConfig _cfg;
+	const DemoConfig _def;
+	const HotkeyConfig _defHotkey;
+
+	FUCK::ManagedHotkey _toggleHotkey;
+
 private:
 	// Draw Implementations
 	void DrawBasicWidgetsTab();
@@ -170,24 +218,6 @@ private:
 	void DrawGameControlTab();
 	void DrawIconsTab();
 
-	// --- Shared State ---
-
-	// Standard Mutex Group
-	bool _chkNear = false;
-	bool _chkMutexA = true;
-	bool _chkMutexB = false;
-
-	// Independent Group
-	bool _chkFarA = false;
-	bool _chkFarB = true;
-
-	bool         _toggleState = false;
-	float        _sliderVal = 50.0f;
-	std::int32_t _intVal = 5;
-	float        _dragFloat = 0.5f;
-	std::int32_t _dragInt = 10;
-	char         _inputBuffer[256] = { 0 };
-
 	// Feature Demos
 	int _iconBtnClicks = 0;
 	bool _useChildWindow = false;
@@ -196,20 +226,6 @@ private:
 
 	FUCK::Image _loadedImage;
 	char _ImagePath[256] = "Data/Interface/test.png";
-
-	// Overlay Demo
-	bool _showOverlay = false;
-	int _overlayType = 0;  // 0=Grid, 1=Columns, 2=Spiral, 3=X, 4=Diag
-	float _overlayThickness = 2.0f;
-	float _overlayColor[4] = { 1.0f, 1.0f, 1.0f, 0.5f };
-	int _gridRows = 10;
-	int _gridCols = 10;
-	int _spiralAnchor = 0;  // 0=BR, 1=BL, 2=TL, 3=TR
-	float _spiralRot = 0.0f;
-	float _spiralScale = 1.0f;
-	float _spiralTurns = 6.0f;
-	bool _showSquares = false;
-	bool _triMirror = false;
 
 	// Input Capture Demo
 	int _keyTestIndex = 1;
@@ -245,6 +261,7 @@ private:
 
 	DemoOverlay _overlay;
 	SimpleOverlay _secondOverlay;
+	HudWidget _hudWidget;
 
 	// Tool Instances
 	ToolGeneral _toolGeneral;

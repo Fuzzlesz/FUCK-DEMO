@@ -41,15 +41,19 @@ void DemoState::DrawBasicWidgetsTab()
 	FUCK::Header("$DEMO_Section_Checkboxes"_T);
 	FUCK::TextDisabled("$DEMO_Header_Mutex"_T);
 
+	bool changed = false;
+
 	FUCK::PushID("MutexGroup");
 	{
-		if (FUCK::Checkbox("$DEMO_OptionA"_T, &_chkMutexA, false, true)) {
-			if (_chkMutexA)
-				_chkMutexB = false;
+		if (FUCK::Checkbox("$DEMO_OptionA"_T, &_cfg.chkMutexA, false, true)) {
+			changed = true;
+			if (_cfg.chkMutexA)
+				_cfg.chkMutexB = false;
 		}
-		if (FUCK::Checkbox("$DEMO_OptionB"_T, &_chkMutexB, false, false)) {
-			if (_chkMutexB)
-				_chkMutexA = false;
+		if (FUCK::Checkbox("$DEMO_OptionB"_T, &_cfg.chkMutexB, false, false)) {
+			changed = true;
+			if (_cfg.chkMutexB)
+				_cfg.chkMutexA = false;
 		}
 	}
 	FUCK::PopID();
@@ -59,8 +63,8 @@ void DemoState::DrawBasicWidgetsTab()
 
 	FUCK::PushID("FarGroup");
 	{
-		FUCK::Checkbox("$DEMO_FarLabelA"_T, &_chkFarA, true, true);
-		FUCK::Checkbox("$DEMO_FarLabelB"_T, &_chkFarB, true, false);
+		changed |= FUCK::Checkbox("$DEMO_FarLabelA"_T, &_cfg.chkFarA, true, true);
+		changed |= FUCK::Checkbox("$DEMO_FarLabelB"_T, &_cfg.chkFarB, true, false);
 	}
 	FUCK::PopID();
 
@@ -69,31 +73,42 @@ void DemoState::DrawBasicWidgetsTab()
 	// Toggle Buttons
 	FUCK::Header("$DEMO_Section_ToggleSwitches"_T);
 	FUCK::TextDisabled("$DEMO_Header_Far"_T);
-	FUCK::ToggleButton("$DEMO_ToggleLabel"_T, &_toggleState);
-	FUCK::ToggleButton("$DEMO_ToggleLabel_Right"_T, &_toggleState, true, false);
+	changed |= FUCK::ToggleButton("$DEMO_ToggleLabel"_T, &_cfg.toggleState);
+	changed |= FUCK::ToggleButton("$DEMO_ToggleLabel_Right"_T, &_cfg.toggleState, true, false);
 
 	FUCK::Spacing();
 	FUCK::TextDisabled("$DEMO_Header_Near"_T);
 
 	FUCK::PushID("NearToggles");
 	{
-		FUCK::ToggleButton("$DEMO_ToggleLabel"_T, &_toggleState, false, true);
-		FUCK::ToggleButton("$DEMO_ToggleLabel_Right"_T, &_toggleState, false, false);
+		changed |= FUCK::ToggleButton("$DEMO_ToggleLabel"_T, &_cfg.toggleState, false, true);
+		changed |= FUCK::ToggleButton("$DEMO_ToggleLabel_Right"_T, &_cfg.toggleState, false, false);
 	}
 	FUCK::PopID();
+
+	if (changed)
+		DemoState::GetSingleton()->SaveSettings();
 
 	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_Sliders"_T);
-	FUCK::SliderFloat("$DEMO_HostFloat"_T, &_sliderVal, 0.0f, 100.0f, "%.1f");
-	FUCK::DragInt("$DEMO_DragInt"_T, &_dragInt, 1.0f, 0, 100, "%d");
+	FUCK::TextWrapped("$DEMO_SliderDesc"_T);
+	FUCK::Spacing();
+	FUCK::SliderFloat("$DEMO_HostFloat"_T, &_cfg.sliderVal, 0.0f, 100.0f, "%.1f");
+	if (FUCK::IsItemDeactivatedAfterEdit())
+		DemoState::GetSingleton()->SaveSettings();
+
+	FUCK::DragInt("$DEMO_DragInt"_T, &_cfg.dragInt, 1.0f, 0, 100, "%d");
+	if (FUCK::IsItemDeactivatedAfterEdit())
+		DemoState::GetSingleton()->SaveSettings();
 
 	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_TextInput"_T);
-	FUCK::TextWrapped("$DEMO_InputDesc"_T);
 	FUCK::SetNextItemWidth(-1);
-	FUCK::InputText("$DEMO_InputField"_T, _inputBuffer, sizeof(_inputBuffer));
+	FUCK::InputText("$DEMO_InputField"_T, _cfg.inputBuffer, sizeof(_cfg.inputBuffer));
+	if (FUCK::IsItemDeactivatedAfterEdit())
+		DemoState::GetSingleton()->SaveSettings();
 
 	FUCK::Spacing();
 

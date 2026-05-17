@@ -10,9 +10,13 @@ DemoState::DemoState()
 	_overlay._secondWindow = &_secondOverlay;
 	_secondOverlay._parentWindow = &_overlay;
 
+	// Pre-load the image so the window creation instantly knows the correct bounds
+	_hudWidget._hudImage = FUCK::Image("Data/Interface/test.png", false);
+
 	// Register Overlays
 	FUCK::RegisterWindow(&_overlay);
 	FUCK::RegisterWindow(&_secondOverlay);
+	FUCK::RegisterWindow(&_hudWidget);
 
 	// Register Split Tools
 	FUCK::RegisterTool(&_toolGeneral);
@@ -63,10 +67,10 @@ void DemoState::OnOpen()
 {
 	logger::info("Demo Tool Opened");
 
-	if (_inputBuffer[0] == '\0') {
+	if (_cfg.inputBuffer[0] == '\0') {
 		const char* ph = "$DEMO_InputPlaceholder"_T;
 		if (ph)
-			strncpy_s(_inputBuffer, ph, sizeof(_inputBuffer));
+			strncpy_s(_cfg.inputBuffer, ph, sizeof(_cfg.inputBuffer));
 	}
 
 	if (_stepperOptions.empty()) {
@@ -83,7 +87,6 @@ void DemoState::OnOpen()
 void DemoState::OnClose()
 {
 	logger::info("Demo Tool Closed");
-	SaveSettings();
 }
 
 bool DemoState::OnAsyncInput(const void* inputEvent)
@@ -98,11 +101,12 @@ bool DemoState::OnAsyncInput(const void* inputEvent)
 		return true;
 	}
 
-	if (FUCK::UpdateManagedHotkey(inputEvent, _overlay._toggleHotkey)) {
+	if (FUCK::UpdateManagedHotkey(inputEvent, _toggleHotkey)) {
+		SaveKeybinds();
 		return true;
 	}
 
-	if (FUCK::ProcessManagedHotkey(inputEvent, _overlay._toggleHotkey)) {
+	if (FUCK::ProcessManagedHotkey(inputEvent, _toggleHotkey)) {
 		_overlay._isOpen = !_overlay._isOpen;
 		return true;
 	}
@@ -111,28 +115,349 @@ bool DemoState::OnAsyncInput(const void* inputEvent)
 }
 
 // ==========================================
-// Overlays
+// Settings Implementation
 // ==========================================
+
+void DemoState::LoadSettings()
+{
+	GetSettings().Load([this](CSimpleIniA& ini) {
+		_cfg.chkNear = ini.GetBoolValue("Widgets", "ChkNear", _def.chkNear);
+		_cfg.chkMutexA = ini.GetBoolValue("Widgets", "MutexA", _def.chkMutexA);
+		_cfg.chkMutexB = ini.GetBoolValue("Widgets", "MutexB", _def.chkMutexB);
+		_cfg.chkFarA = ini.GetBoolValue("Widgets", "ChkFarA", _def.chkFarA);
+		_cfg.chkFarB = ini.GetBoolValue("Widgets", "ChkFarB", _def.chkFarB);
+		_cfg.toggleState = ini.GetBoolValue("Widgets", "ToggleState", _def.toggleState);
+		_cfg.sliderVal = static_cast<float>(ini.GetDoubleValue("Widgets", "SliderVal", _def.sliderVal));
+		_cfg.intVal = static_cast<std::int32_t>(ini.GetLongValue("Widgets", "IntVal", _def.intVal));
+		_cfg.dragFloat = static_cast<float>(ini.GetDoubleValue("Widgets", "DragFloat", _def.dragFloat));
+		_cfg.dragInt = static_cast<std::int32_t>(ini.GetLongValue("Widgets", "DragInt", _def.dragInt));
+
+		const char* inputBuf = ini.GetValue("Widgets", "InputBuffer", nullptr);
+		if (inputBuf)
+			strncpy_s(_cfg.inputBuffer, inputBuf, sizeof(_cfg.inputBuffer));
+
+		_cfg.overlayPos.x = static_cast<float>(ini.GetDoubleValue("Overlay", "X", _def.overlayPos.x));
+		_cfg.overlayPos.y = static_cast<float>(ini.GetDoubleValue("Overlay", "Y", _def.overlayPos.y));
+		_cfg.overlaySize.x = static_cast<float>(ini.GetDoubleValue("Overlay", "Width", _def.overlaySize.x));
+		_cfg.overlaySize.y = static_cast<float>(ini.GetDoubleValue("Overlay", "Height", _def.overlaySize.y));
+		if (_cfg.overlayPos.x != -1.0f && _cfg.overlayPos.y != -1.0f)
+			_overlay._hasLoadedPos = true;
+
+		_cfg.reqBlur = ini.GetBoolValue("OverlayFlags", "Blur", _def.reqBlur);
+		_cfg.reqHideHUD = ini.GetBoolValue("OverlayFlags", "HideHUD", _def.reqHideHUD);
+		_cfg.reqPauseHard = ini.GetBoolValue("OverlayFlags", "PauseHard", _def.reqPauseHard);
+		_cfg.reqPauseSoft = ini.GetBoolValue("OverlayFlags", "PauseSoft", _def.reqPauseSoft);
+		_cfg.reqCloseOnEsc = ini.GetBoolValue("OverlayFlags", "CloseOnEsc", _def.reqCloseOnEsc);
+		_cfg.reqCloseOnMenu = ini.GetBoolValue("OverlayFlags", "CloseOnMenu", _def.reqCloseOnMenu);
+		_cfg.reqPassInput = ini.GetBoolValue("OverlayFlags", "PassInput", _def.reqPassInput);
+		_cfg.reqBlockVanity = ini.GetBoolValue("OverlayFlags", "BlockVanity", _def.reqBlockVanity);
+		_cfg.reqNoBackground = ini.GetBoolValue("OverlayFlags", "NoBackground", _def.reqNoBackground);
+		_cfg.reqNoDecoration = ini.GetBoolValue("OverlayFlags", "NoDecoration", _def.reqNoDecoration);
+		_cfg.reqExtendBorder = ini.GetBoolValue("OverlayFlags", "ExtendBorder", _def.reqExtendBorder);
+
+		_cfg.secondOverlayPos.x = static_cast<float>(ini.GetDoubleValue("SecondWindow", "X", _def.secondOverlayPos.x));
+		_cfg.secondOverlayPos.y = static_cast<float>(ini.GetDoubleValue("SecondWindow", "Y", _def.secondOverlayPos.y));
+		_cfg.secondPassInput = ini.GetBoolValue("SecondWindow", "PassInput", _def.secondPassInput);
+
+		_cfg.hudWidgetPos.x = static_cast<float>(ini.GetDoubleValue("HudWidget", "X", _def.hudWidgetPos.x));
+		_cfg.hudWidgetPos.y = static_cast<float>(ini.GetDoubleValue("HudWidget", "Y", _def.hudWidgetPos.y));
+		if (_cfg.hudWidgetPos.x != -1.0f && _cfg.hudWidgetPos.y != -1.0f)
+			_hudWidget._hasLoadedPos = true;
+
+		_cfg.hudKeepOpen = ini.GetBoolValue("HudWidget", "KeepOpen", _def.hudKeepOpen);
+		_cfg.hudScale = static_cast<float>(ini.GetDoubleValue("HudWidget", "Scale", _def.hudScale));
+
+		_cfg.showOverlay = ini.GetBoolValue("Rendering", "ShowOverlay", _def.showOverlay);
+		_cfg.overlayType = static_cast<int>(ini.GetLongValue("Rendering", "OverlayType", _def.overlayType));
+		_cfg.overlayThickness = static_cast<float>(ini.GetDoubleValue("Rendering", "OverlayThickness", _def.overlayThickness));
+		_cfg.overlayColor[0] = static_cast<float>(ini.GetDoubleValue("Rendering", "OverlayColorR", _def.overlayColor[0]));
+		_cfg.overlayColor[1] = static_cast<float>(ini.GetDoubleValue("Rendering", "OverlayColorG", _def.overlayColor[1]));
+		_cfg.overlayColor[2] = static_cast<float>(ini.GetDoubleValue("Rendering", "OverlayColorB", _def.overlayColor[2]));
+		_cfg.overlayColor[3] = static_cast<float>(ini.GetDoubleValue("Rendering", "OverlayColorA", _def.overlayColor[3]));
+		_cfg.gridRows = static_cast<int>(ini.GetLongValue("Rendering", "GridRows", _def.gridRows));
+		_cfg.gridCols = static_cast<int>(ini.GetLongValue("Rendering", "GridCols", _def.gridCols));
+		_cfg.spiralAnchor = static_cast<int>(ini.GetLongValue("Rendering", "SpiralAnchor", _def.spiralAnchor));
+		_cfg.spiralRot = static_cast<float>(ini.GetDoubleValue("Rendering", "SpiralRot", _def.spiralRot));
+		_cfg.spiralScale = static_cast<float>(ini.GetDoubleValue("Rendering", "SpiralScale", _def.spiralScale));
+		_cfg.spiralTurns = static_cast<float>(ini.GetDoubleValue("Rendering", "SpiralTurns", _def.spiralTurns));
+		_cfg.showSquares = ini.GetBoolValue("Rendering", "ShowSquares", _def.showSquares);
+		_cfg.triMirror = ini.GetBoolValue("Rendering", "TriMirror", _def.triMirror);
+	});
+
+	GetSettings().LoadKeybinds([this](CSimpleIniA& ini) {
+		_toggleHotkey.kKey = static_cast<std::uint32_t>(ini.GetLongValue("Overlay", "Hotkey", _defHotkey.kKey));
+		_toggleHotkey.kMod1 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "Modifier1", _defHotkey.kMod1));
+		_toggleHotkey.kMod2 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "Modifier2", _defHotkey.kMod2));
+		_toggleHotkey.gKey = static_cast<std::uint32_t>(ini.GetLongValue("Overlay", "GPHotkey", _defHotkey.gKey));
+		_toggleHotkey.gMod1 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "GPModifier1", _defHotkey.gMod1));
+		_toggleHotkey.gMod2 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "GPModifier2", _defHotkey.gMod2));
+	});
+}
+
+void DemoState::SaveSettings()
+{
+	GetSettings().Save([this](CSimpleIniA& ini) {
+		// General Widgets
+		ini.SetBoolValue("Widgets", "ChkNear", _cfg.chkNear);
+		ini.SetBoolValue("Widgets", "MutexA", _cfg.chkMutexA);
+		ini.SetBoolValue("Widgets", "MutexB", _cfg.chkMutexB);
+		ini.SetBoolValue("Widgets", "ChkFarA", _cfg.chkFarA);
+		ini.SetBoolValue("Widgets", "ChkFarB", _cfg.chkFarB);
+		ini.SetBoolValue("Widgets", "ToggleState", _cfg.toggleState);
+		ini.SetValue("Widgets", "SliderVal", std::format("{:.2f}", _cfg.sliderVal).c_str());
+		ini.SetLongValue("Widgets", "IntVal", _cfg.intVal);
+		ini.SetValue("Widgets", "DragFloat", std::format("{:.2f}", _cfg.dragFloat).c_str());
+		ini.SetLongValue("Widgets", "DragInt", _cfg.dragInt);
+		ini.SetValue("Widgets", "InputBuffer", _cfg.inputBuffer);
+
+		// Overlay Position & Size
+		ini.SetValue("Overlay", "X", std::format("{:.2f}", _cfg.overlayPos.x).c_str());
+		ini.SetValue("Overlay", "Y", std::format("{:.2f}", _cfg.overlayPos.y).c_str());
+		ini.SetValue("Overlay", "Width", std::format("{:.2f}", _cfg.overlaySize.x).c_str());
+		ini.SetValue("Overlay", "Height", std::format("{:.2f}", _cfg.overlaySize.y).c_str());
+
+		// Overlay Flags
+		ini.SetBoolValue("OverlayFlags", "Blur", _cfg.reqBlur);
+		ini.SetBoolValue("OverlayFlags", "HideHUD", _cfg.reqHideHUD);
+		ini.SetBoolValue("OverlayFlags", "PauseHard", _cfg.reqPauseHard);
+		ini.SetBoolValue("OverlayFlags", "PauseSoft", _cfg.reqPauseSoft);
+		ini.SetBoolValue("OverlayFlags", "CloseOnEsc", _cfg.reqCloseOnEsc);
+		ini.SetBoolValue("OverlayFlags", "CloseOnMenu", _cfg.reqCloseOnMenu);
+		ini.SetBoolValue("OverlayFlags", "PassInput", _cfg.reqPassInput);
+		ini.SetBoolValue("OverlayFlags", "BlockVanity", _cfg.reqBlockVanity);
+		ini.SetBoolValue("OverlayFlags", "NoBackground", _cfg.reqNoBackground);
+		ini.SetBoolValue("OverlayFlags", "NoDecoration", _cfg.reqNoDecoration);
+		ini.SetBoolValue("OverlayFlags", "ExtendBorder", _cfg.reqExtendBorder);
+
+		// Second Window
+		ini.SetValue("SecondWindow", "X", std::format("{:.2f}", _cfg.secondOverlayPos.x).c_str());
+		ini.SetValue("SecondWindow", "Y", std::format("{:.2f}", _cfg.secondOverlayPos.y).c_str());
+		ini.SetBoolValue("SecondWindow", "PassInput", _cfg.secondPassInput);
+
+		// HUD Widget
+		ini.SetValue("HudWidget", "X", std::format("{:.2f}", _cfg.hudWidgetPos.x).c_str());
+		ini.SetValue("HudWidget", "Y", std::format("{:.2f}", _cfg.hudWidgetPos.y).c_str());
+		ini.SetBoolValue("HudWidget", "KeepOpen", _cfg.hudKeepOpen);
+		ini.SetValue("HudWidget", "Scale", std::format("{:.2f}", _cfg.hudScale).c_str());
+
+		// Rendering
+		ini.SetBoolValue("Rendering", "ShowOverlay", _cfg.showOverlay);
+		ini.SetLongValue("Rendering", "OverlayType", _cfg.overlayType);
+		ini.SetValue("Rendering", "OverlayThickness", std::format("{:.2f}", _cfg.overlayThickness).c_str());
+		ini.SetValue("Rendering", "OverlayColorR", std::format("{:.2f}", _cfg.overlayColor[0]).c_str());
+		ini.SetValue("Rendering", "OverlayColorG", std::format("{:.2f}", _cfg.overlayColor[1]).c_str());
+		ini.SetValue("Rendering", "OverlayColorB", std::format("{:.2f}", _cfg.overlayColor[2]).c_str());
+		ini.SetValue("Rendering", "OverlayColorA", std::format("{:.2f}", _cfg.overlayColor[3]).c_str());
+		ini.SetLongValue("Rendering", "GridRows", _cfg.gridRows);
+		ini.SetLongValue("Rendering", "GridCols", _cfg.gridCols);
+		ini.SetLongValue("Rendering", "SpiralAnchor", _cfg.spiralAnchor);
+		ini.SetValue("Rendering", "SpiralRot", std::format("{:.2f}", _cfg.spiralRot).c_str());
+		ini.SetValue("Rendering", "SpiralScale", std::format("{:.2f}", _cfg.spiralScale).c_str());
+		ini.SetValue("Rendering", "SpiralTurns", std::format("{:.2f}", _cfg.spiralTurns).c_str());
+		ini.SetBoolValue("Rendering", "ShowSquares", _cfg.showSquares);
+		ini.SetBoolValue("Rendering", "TriMirror", _cfg.triMirror);
+	});
+}
+
+void DemoState::SaveKeybinds()
+{
+	GetSettings().SaveKeybinds([this](CSimpleIniA& ini) {
+		ini.SetLongValue("Overlay", "Hotkey", static_cast<long>(_toggleHotkey.kKey));
+		ini.SetLongValue("Overlay", "Modifier1", static_cast<long>(_toggleHotkey.kMod1));
+		ini.SetLongValue("Overlay", "Modifier2", static_cast<long>(_toggleHotkey.kMod2));
+		ini.SetLongValue("Overlay", "GPHotkey", static_cast<long>(_toggleHotkey.gKey));
+		ini.SetLongValue("Overlay", "GPModifier1", static_cast<long>(_toggleHotkey.gMod1));
+		ini.SetLongValue("Overlay", "GPModifier2", static_cast<long>(_toggleHotkey.gMod2));
+	});
+}
+
+// ==========================================
+// Simple Secondary Overlay
+// ==========================================
+
+FUCK::WindowFlags SimpleOverlay::GetFlags() const
+{
+	FUCK::WindowFlags f = FUCK::WindowFlags::kNoDecoration;
+	if (DemoState::GetSingleton()->_cfg.secondPassInput)
+		f = f | FUCK::WindowFlags::kPassInputToGame;
+	return f;
+}
 
 ImVec2 SimpleOverlay::GetDefaultPos() const
 {
 	float scale = FUCK::GetResolutionScale();
-	return { _pos.x * scale, _pos.y * scale };
+	return { DemoState::GetSingleton()->_def.secondOverlayPos.x * scale, DemoState::GetSingleton()->_def.secondOverlayPos.y * scale };
 }
 
 ImVec2 SimpleOverlay::GetDefaultSize() const
 {
 	float scale = FUCK::GetResolutionScale();
-	return { _size.x * scale, _size.y * scale };
+	return { 400.0f * scale, 300.0f * scale };
 }
 
 bool SimpleOverlay::GetRequestedPos(ImVec2& outPos)
 {
-	if (_pos.x > 0.0f || _pos.y > 0.0f) {
-		outPos = _pos;
+	auto cfgPos = DemoState::GetSingleton()->_cfg.secondOverlayPos;
+	if (cfgPos.x > 0.0f || cfgPos.y > 0.0f) {
+		outPos = cfgPos;
 		return true;
 	}
 	return false;
+}
+
+void SimpleOverlay::UpdateState(const ImVec2& currentPos, const ImVec2& /*currentSize*/)
+{
+	DemoState::GetSingleton()->_cfg.secondOverlayPos = currentPos;
+}
+
+void SimpleOverlay::Draw()
+{
+	if (FUCK::Checkbox("$DEMO_Sec_PassInput"_T, &DemoState::GetSingleton()->_cfg.secondPassInput, false, false)) {
+		DemoState::GetSingleton()->SaveSettings();
+		if (DemoState::GetSingleton()->_cfg.secondPassInput) {
+			FUCK::SetMenuOpen(false);
+			if (_parentWindow) {
+				_parentWindow->SetOpen(false);
+			}
+		}
+	}
+	FUCK::SetTooltip("$DEMO_Sec_PassInputTip"_T);
+
+	FUCK::Separator();
+	FUCK::Spacing();
+
+	if (DemoState::GetSingleton()->_cfg.secondPassInput) {
+		FUCK::TextColoredWrapped(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "$DEMO_Sec_CloseHint"_T);
+	}
+
+	FUCK::TextWrapped("$DEMO_SecondOverlayContent"_T);
+	FUCK::Spacing();
+	if (FUCK::Button("$DEMO_SecondOverlayClose"_T)) {
+		_isOpen = false;
+	}
+}
+
+// ==========================================
+// HUD Widget Implementation
+// ==========================================
+
+FUCK::WindowFlags HudWidget::GetFlags() const
+{
+	FUCK::WindowFlags flags = FUCK::WindowFlags::kNoDecoration |
+	                          FUCK::WindowFlags::kNoBackground |
+	                          FUCK::WindowFlags::kAutoResize;
+
+	if (!FUCK::IsMenuOpen()) {
+		flags = flags | FUCK::WindowFlags::kPassInputToGame;
+	}
+
+	if (!DemoState::GetSingleton()->_cfg.hudKeepOpen)
+		flags = flags | FUCK::WindowFlags::kCloseOnGameMenu;
+
+	return flags;
+}
+
+ImVec2 HudWidget::GetDefaultSize() const
+{
+	if (const_cast<HudWidget*>(this)->_hudImage.IsLoaded()) {
+		float s = FUCK::GetResolutionScale();
+		float padding = 12.0f * s;
+		return { (_hudImage.GetWidth() * s * DemoState::GetSingleton()->_cfg.hudScale) + (padding * 2.0f),
+			(_hudImage.GetHeight() * s * DemoState::GetSingleton()->_cfg.hudScale) + (padding * 2.0f) };
+	}
+	return { 100.0f, 100.0f };
+}
+
+bool HudWidget::GetRequestedPos(ImVec2& outPos)
+{
+	if (_hasLoadedPos) {
+		outPos = DemoState::GetSingleton()->_cfg.hudWidgetPos;
+		return true;
+	}
+	return false;
+}
+
+void HudWidget::UpdateState(const ImVec2& currentPos, const ImVec2& /*currentSize*/)
+{
+	DemoState::GetSingleton()->_cfg.hudWidgetPos = currentPos;
+}
+
+void HudWidget::Draw()
+{
+	bool isInteractable = FUCK::IsMenuOpen();
+	auto& cfg = DemoState::GetSingleton()->_cfg;
+
+	if (isInteractable && FUCK::IsMouseReleased(0)) {
+		if (cfg.hudWidgetPos.x != _lastSavedPos.x || cfg.hudWidgetPos.y != _lastSavedPos.y) {
+			_lastSavedPos = cfg.hudWidgetPos;
+			DemoState::GetSingleton()->SaveSettings();
+		}
+	}
+
+	if (!_hudImage.IsLoaded()) {
+		_hudImage = FUCK::Image("Data/Interface/test.png", false);
+	}
+
+	if (_hudImage.IsLoaded()) {
+		float resScale = FUCK::GetResolutionScale();
+		ImVec2 imageSize = { _hudImage.GetWidth() * resScale * cfg.hudScale, _hudImage.GetHeight() * resScale * cfg.hudScale };
+
+		float padding = 12.0f * resScale;
+		FUCK::SetCursorPos({ padding, padding });
+
+		ImVec2 pMin = FUCK::GetCursorScreenPos();
+		ImVec2 pMax = { pMin.x + imageSize.x, pMin.y + imageSize.y };
+
+		FUCK::DrawImage(_hudImage.GetID(), imageSize);
+
+		if (isInteractable) {
+			bool isHovered = FUCK::IsWindowHovered(0);
+
+			float gap = 4.0f * resScale;
+			pMin.x -= gap;
+			pMin.y -= gap;
+			pMax.x += gap;
+			pMax.y += gap;
+
+			FUCK::EditorBoundsState state = isHovered ? FUCK::EditorBoundsState::kHovered : FUCK::EditorBoundsState::kNormal;
+			FUCK::DrawEditorBounds(pMin, pMax, state, 2.0f);
+		}
+	} else {
+		FUCK::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "$DEMO_ImageMissing"_T);
+	}
+}
+
+// ==========================================
+// Demo Overlay Implementation
+// ==========================================
+
+FUCK::WindowFlags DemoOverlay::GetFlags() const
+{
+	auto& cfg = DemoState::GetSingleton()->_cfg;
+	FUCK::WindowFlags flags = FUCK::WindowFlags::kNone;
+	if (cfg.reqBlur)
+		flags = flags | FUCK::WindowFlags::kBlurBackground;
+	if (cfg.reqHideHUD)
+		flags = flags | FUCK::WindowFlags::kHideHUD;
+	if (cfg.reqPauseHard)
+		flags = flags | FUCK::WindowFlags::kPauseHard;
+	if (cfg.reqPauseSoft)
+		flags = flags | FUCK::WindowFlags::kPauseSoft;
+	if (cfg.reqCloseOnEsc)
+		flags = flags | FUCK::WindowFlags::kCloseOnEsc;
+	if (cfg.reqCloseOnMenu)
+		flags = flags | FUCK::WindowFlags::kCloseOnGameMenu;
+	if (cfg.reqPassInput)
+		flags = flags | FUCK::WindowFlags::kPassInputToGame;
+	if (cfg.reqBlockVanity)
+		flags = flags | FUCK::WindowFlags::kBlockVanity;
+	if (cfg.reqNoBackground)
+		flags = flags | FUCK::WindowFlags::kNoBackground;
+	if (cfg.reqNoDecoration)
+		flags = flags | FUCK::WindowFlags::kNoDecoration;
+	if (cfg.reqExtendBorder)
+		flags = flags | FUCK::WindowFlags::kExtendBorder;
+	return flags;
 }
 
 ImVec2 DemoOverlay::GetDefaultPos() const
@@ -158,254 +483,99 @@ ImVec2 DemoOverlay::GetDefaultSize() const
 bool DemoOverlay::GetRequestedPos(ImVec2& outPos)
 {
 	if (_hasLoadedPos) {
-		outPos = _windowPos;
+		outPos = DemoState::GetSingleton()->_cfg.overlayPos;
 		return true;
 	}
 	return false;
 }
 
-// ==========================================
-// Settings Implementation
-// ==========================================
-
-void DemoState::LoadSettings()
+void DemoOverlay::UpdateState(const ImVec2& currentPos, const ImVec2& currentSize)
 {
-	GetSettings().Load([this](CSimpleIniA& ini) {
-		_chkNear = ini.GetBoolValue("Widgets", "ChkNear", _chkNear);
-		_chkMutexA = ini.GetBoolValue("Widgets", "MutexA", _chkMutexA);
-		_chkMutexB = ini.GetBoolValue("Widgets", "MutexB", _chkMutexB);
-		_chkFarA = ini.GetBoolValue("Widgets", "ChkFarA", _chkFarA);
-		_chkFarB = ini.GetBoolValue("Widgets", "ChkFarB", _chkFarB);
-		_toggleState = ini.GetBoolValue("Widgets", "ToggleState", _toggleState);
-		_sliderVal = static_cast<float>(ini.GetDoubleValue("Widgets", "SliderVal", _sliderVal));
-		_intVal = ini.GetLongValue("Widgets", "IntVal", _intVal);
-		_dragFloat = static_cast<float>(ini.GetDoubleValue("Widgets", "DragFloat", _dragFloat));
-		_dragInt = ini.GetLongValue("Widgets", "DragInt", _dragInt);
-		const char* inputBuf = ini.GetValue("Widgets", "InputBuffer", nullptr);
-		if (inputBuf) {
-			strncpy_s(_inputBuffer, inputBuf, sizeof(_inputBuffer));
-		}
-
-		// Overlay Position
-		double x = ini.GetDoubleValue("Overlay", "X", -1.0);
-		double y = ini.GetDoubleValue("Overlay", "Y", -1.0);
-		double w = ini.GetDoubleValue("Overlay", "Width", -1.0);
-		double h = ini.GetDoubleValue("Overlay", "Height", -1.0);
-
-		if (x != -1.0 && y != -1.0) {
-			_overlay._windowPos = { static_cast<float>(x), static_cast<float>(y) };
-			_overlay._lastSavedPos = _overlay._windowPos;
-			_overlay._hasLoadedPos = true;
-		}
-		if (w != -1.0 && h != -1.0) {
-			_overlay._windowSize = { static_cast<float>(w), static_cast<float>(h) };
-			_overlay._lastSavedSize = _overlay._windowSize;
-		}
-		
-		// Keys
-		_overlay._toggleHotkey.kKey = static_cast<std::uint32_t>(ini.GetLongValue("Overlay", "Hotkey", _overlay._toggleHotkey.kKey));
-		_overlay._toggleHotkey.kMod1 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "Modifier1", _overlay._toggleHotkey.kMod1));
-		_overlay._toggleHotkey.kMod2 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "Modifier2", _overlay._toggleHotkey.kMod2));
-		_overlay._toggleHotkey.gKey = static_cast<std::uint32_t>(ini.GetLongValue("Overlay", "GPHotkey", _overlay._toggleHotkey.gKey));
-		_overlay._toggleHotkey.gMod1 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "GPModifier1", _overlay._toggleHotkey.gMod1));
-		_overlay._toggleHotkey.gMod2 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "GPModifier2", _overlay._toggleHotkey.gMod2));
-
-		// Flags
-		_overlay._reqBlur = ini.GetBoolValue("OverlayFlags", "Blur", _overlay._reqBlur);
-		_overlay._reqHideHUD = ini.GetBoolValue("OverlayFlags", "HideHUD", _overlay._reqHideHUD);
-		_overlay._reqBlockVanity = ini.GetBoolValue("OverlayFlags", "BlockVanity", _overlay._reqBlockVanity);
-		_overlay._reqCloseOnEsc = ini.GetBoolValue("OverlayFlags", "CloseOnEsc", _overlay._reqCloseOnEsc);
-		_overlay._reqCloseOnMenu = ini.GetBoolValue("OverlayFlags", "CloseOnMenu", _overlay._reqCloseOnMenu);
-
-		// Second Window
-		_secondOverlay._pos.x = static_cast<float>(ini.GetDoubleValue("SecondWindow", "X", _secondOverlay._pos.x));
-		_secondOverlay._pos.y = static_cast<float>(ini.GetDoubleValue("SecondWindow", "Y", _secondOverlay._pos.y));
-	});
-}
-
-void DemoState::SaveSettings()
-{
-	GetSettings().Save([this](CSimpleIniA& ini) {
-		// General Widgets
-		ini.SetBoolValue("Widgets", "ChkNear", _chkNear);
-		ini.SetBoolValue("Widgets", "MutexA", _chkMutexA);
-		ini.SetBoolValue("Widgets", "MutexB", _chkMutexB);
-		ini.SetBoolValue("Widgets", "ChkFarA", _chkFarA);
-		ini.SetBoolValue("Widgets", "ChkFarB", _chkFarB);
-		ini.SetBoolValue("Widgets", "ToggleState", _toggleState);
-		ini.SetDoubleValue("Widgets", "SliderVal", _sliderVal);
-		ini.SetLongValue("Widgets", "IntVal", _intVal);
-		ini.SetDoubleValue("Widgets", "DragFloat", _dragFloat);
-		ini.SetLongValue("Widgets", "DragInt", _dragInt);
-		ini.SetValue("Widgets", "InputBuffer", _inputBuffer);
-
-		// Overlay Position & Size
-		ini.SetDoubleValue("Overlay", "X", _overlay._windowPos.x);
-		ini.SetDoubleValue("Overlay", "Y", _overlay._windowPos.y);
-		ini.SetDoubleValue("Overlay", "Width", _overlay._windowSize.x);
-		ini.SetDoubleValue("Overlay", "Height", _overlay._windowSize.y);
-
-		// Overlay Keys
-		ini.SetLongValue("Overlay", "Hotkey", _overlay._toggleHotkey.kKey);
-		ini.SetLongValue("Overlay", "Modifier1", _overlay._toggleHotkey.kMod1);
-		ini.SetLongValue("Overlay", "Modifier2", _overlay._toggleHotkey.kMod2);
-		ini.SetLongValue("Overlay", "GPHotkey", _overlay._toggleHotkey.gKey);
-		ini.SetLongValue("Overlay", "GPModifier1", _overlay._toggleHotkey.gMod1);
-		ini.SetLongValue("Overlay", "GPModifier2", _overlay._toggleHotkey.gMod2);
-
-		// Overlay Flags
-		ini.SetBoolValue("OverlayFlags", "Blur", _overlay._reqBlur);
-		ini.SetBoolValue("OverlayFlags", "HideHUD", _overlay._reqHideHUD);
-		ini.SetBoolValue("OverlayFlags", "BlockVanity", _overlay._reqBlockVanity);
-		ini.SetBoolValue("OverlayFlags", "CloseOnEsc", _overlay._reqCloseOnEsc);
-		ini.SetBoolValue("OverlayFlags", "CloseOnMenu", _overlay._reqCloseOnMenu);
-
-		// Second Window
-		ini.SetDoubleValue("SecondWindow", "X", _secondOverlay._pos.x);
-		ini.SetDoubleValue("SecondWindow", "Y", _secondOverlay._pos.y);
-
-		// HUD Widget
-		ini.SetDoubleValue("HudWidget", "X", static_cast<double>(_hudWidget._pos.x));
-		ini.SetDoubleValue("HudWidget", "Y", static_cast<double>(_hudWidget._pos.y));
-		ini.SetBoolValue("HudWidget", "KeepOpen", _hudWidget._keepOpen);
-		ini.SetDoubleValue("HudWidget", "Scale", static_cast<double>(_hudWidget._scale));
-	});
-}
-
-// ==========================================
-// Simple Secondary Overlay
-// ==========================================
-
-void SimpleOverlay::Draw()
-{
-	if (FUCK::Checkbox("$DEMO_Sec_PassInput"_T, &_passInput, false, false)) {
-		if (_passInput) {
-			FUCK::SetMenuOpen(false);
-			if (_parentWindow) {
-				_parentWindow->SetOpen(false);
-			}
-		}
-	}
-	FUCK::SetTooltip("$DEMO_Sec_PassInputTip"_T);
-
-	FUCK::Separator();
-	FUCK::Spacing();
-
-	if (_passInput) {
-		FUCK::TextColoredWrapped(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "$DEMO_Sec_CloseHint"_T);
-	}
-
-	FUCK::TextWrapped("$DEMO_SecondOverlayContent"_T);
-	FUCK::Spacing();
-	if (FUCK::Button("$DEMO_SecondOverlayClose"_T)) {
-		_isOpen = false;
-	}
-}
-
-// ==========================================
-// Demo Overlay Implementation
-// ==========================================
-
-FUCK::WindowFlags DemoOverlay::GetFlags() const
-{
-	FUCK::WindowFlags flags = FUCK::WindowFlags::kNone;
-	if (_reqBlur)
-		flags = flags | FUCK::WindowFlags::kBlurBackground;
-	if (_reqHideHUD)
-		flags = flags | FUCK::WindowFlags::kHideHUD;
-	if (_reqPauseHard)
-		flags = flags | FUCK::WindowFlags::kPauseHard;
-	if (_reqPauseSoft)
-		flags = flags | FUCK::WindowFlags::kPauseSoft;
-	if (_reqCloseOnEsc)
-		flags = flags | FUCK::WindowFlags::kCloseOnEsc;
-	if (_reqCloseOnMenu)
-		flags = flags | FUCK::WindowFlags::kCloseOnGameMenu;
-	if (_reqPassInput)
-		flags = flags | FUCK::WindowFlags::kPassInputToGame;
-	if (_reqBlockVanity)
-		flags = flags | FUCK::WindowFlags::kBlockVanity;
-	if (_reqNoBackground)
-		flags = flags | FUCK::WindowFlags::kNoBackground;
-	if (_reqNoDecoration)
-		flags = flags | FUCK::WindowFlags::kNoDecoration;
-	if (_reqExtendBorder)
-		flags = flags | FUCK::WindowFlags::kExtendBorder;
-	return flags;
+	DemoState::GetSingleton()->_cfg.overlayPos = currentPos;
+	DemoState::GetSingleton()->_cfg.overlaySize = currentSize;
 }
 
 void DemoOverlay::Draw()
 {
+	auto& cfg = DemoState::GetSingleton()->_cfg;
+
 	if (FUCK::IsMouseReleased(0)) {  // 0 = Left Mouse Button
-		if (_windowPos.x != _lastSavedPos.x || _windowPos.y != _lastSavedPos.y ||
-			_windowSize.x != _lastSavedSize.x || _windowSize.y != _lastSavedSize.y) {
-			_lastSavedPos = _windowPos;
-			_lastSavedSize = _windowSize;
+		if (cfg.overlayPos.x != _lastSavedPos.x || cfg.overlayPos.y != _lastSavedPos.y ||
+			cfg.overlaySize.x != _lastSavedSize.x || cfg.overlaySize.y != _lastSavedSize.y) {
+			_lastSavedPos = cfg.overlayPos;
+			_lastSavedSize = cfg.overlaySize;
 			DemoState::GetSingleton()->SaveSettings();
 		}
 	}
 
 	FUCK::Header("$DEMO_Section_WindowMetrics"_T);
-	FUCK::Text("$DEMO_MetricSize"_T, _windowSize.x, _windowSize.y);
-	FUCK::Text("$DEMO_MetricPos"_T, _windowPos.x, _windowPos.y);
+	FUCK::Text("$DEMO_MetricSize"_T, cfg.overlaySize.x, cfg.overlaySize.y);
+	FUCK::Text("$DEMO_MetricPos"_T, cfg.overlayPos.x, cfg.overlayPos.y);
 	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_WindowFlags"_T);
 	FUCK::Text("$DEMO_WindowFlags_Desc"_T);
-	FUCK::Checkbox("$DEMO_Flag_Blur"_T, &_reqBlur, false, false);
+
+	bool flagsChanged = false;
+	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_Blur"_T, &cfg.reqBlur, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_Blur"_T);
-	FUCK::Checkbox("$DEMO_Flag_HideHUD"_T, &_reqHideHUD, false, false);
+	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_HideHUD"_T, &cfg.reqHideHUD, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_HideHUD"_T);
-	FUCK::Checkbox("$DEMO_Flag_PauseHard"_T, &_reqPauseHard, false, false);
+	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_PauseHard"_T, &cfg.reqPauseHard, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_PauseHard"_T);
-	FUCK::Checkbox("$DEMO_Flag_PauseSoft"_T, &_reqPauseSoft, false, false);
+	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_PauseSoft"_T, &cfg.reqPauseSoft, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_PauseSoft"_T);
-	FUCK::Checkbox("$DEMO_Flag_CloseOnEsc"_T, &_reqCloseOnEsc, false, false);
+	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_CloseOnEsc"_T, &cfg.reqCloseOnEsc, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_CloseOnEsc"_T);
-	FUCK::Checkbox("$DEMO_Flag_CloseOnMenu"_T, &_reqCloseOnMenu, false, false);
+	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_CloseOnMenu"_T, &cfg.reqCloseOnMenu, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_CloseOnMenu"_T);
 
-	if (FUCK::Checkbox("$DEMO_Flag_PassInput"_T, &_reqPassInput, false, false)) {
-		if (_reqPassInput) {
+	if (FUCK::Checkbox("$DEMO_Flag_PassInput"_T, &cfg.reqPassInput, false, false)) {
+		flagsChanged = true;
+		if (cfg.reqPassInput) {
 			FUCK::SetMenuOpen(false);
 			std::thread([this]() {
 				std::this_thread::sleep_for(std::chrono::seconds(3));
-				this->_reqPassInput = false;
+				DemoState::GetSingleton()->_cfg.reqPassInput = false;
 			}).detach();
 		}
 	}
 	FUCK::SetTooltip("$DEMO_PassInputTip"_T);
-	FUCK::Checkbox("$DEMO_Flag_BlockVanity"_T, &_reqBlockVanity, false, false);
+	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_BlockVanity"_T, &cfg.reqBlockVanity, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_BlockVanity"_T);
-	FUCK::Checkbox("$DEMO_Flag_NoBackground"_T, &_reqNoBackground, false, false);
+	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_NoBackground"_T, &cfg.reqNoBackground, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_NoBackground"_T);
-	FUCK::Checkbox("$DEMO_Flag_NoDecoration"_T, &_reqNoDecoration, false, false);
+	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_NoDecoration"_T, &cfg.reqNoDecoration, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_NoDecoration"_T);
-	FUCK::Checkbox("$DEMO_Flag_ExtendBorder"_T, &_reqExtendBorder, false, false);
+	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_ExtendBorder"_T, &cfg.reqExtendBorder, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_ExtendBorder"_T);
+
+	if (flagsChanged)
+		DemoState::GetSingleton()->SaveSettings();
 
 	FUCK::SeparatorThick();
 	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_OverlayControls"_T);
-	FUCK::DrawManagedHotkey("$DEMO_OverlayToggleKey"_T, _toggleHotkey);
+	auto state = DemoState::GetSingleton();
+	FUCK::DrawManagedHotkey("$DEMO_OverlayToggleKey"_T, state->_toggleHotkey);
 	FUCK::SetTooltip("$DEMO_OverlayKeyTip"_T);
 	FUCK::Spacing();
 
 	if (FUCK::Button("$DEMO_ResetHotkey"_T)) {
-		_toggleHotkey.kKey = 35;   // H
-		_toggleHotkey.kMod1 = 42;  // Shift
-		_toggleHotkey.kMod2 = -1;
-		_toggleHotkey.gKey = 0;
-		_toggleHotkey.gMod1 = -1;
-		_toggleHotkey.gMod2 = -1;
-		DemoState::GetSingleton()->SaveSettings();
+		state->_toggleHotkey.kKey = state->_defHotkey.kKey;
+		state->_toggleHotkey.kMod1 = state->_defHotkey.kMod1;
+		state->_toggleHotkey.kMod2 = state->_defHotkey.kMod2;
+		state->_toggleHotkey.gKey = state->_defHotkey.gKey;
+		state->_toggleHotkey.gMod1 = state->_defHotkey.gMod1;
+		state->_toggleHotkey.gMod2 = state->_defHotkey.gMod2;
+		state->SaveKeybinds();
 	}
 
 	FUCK::SameLine();
 	if (FUCK::Button("$DEMO_UnmapHotkey"_T)) {
-		_toggleHotkey.Clear();
-		DemoState::GetSingleton()->SaveSettings();
+		state->_toggleHotkey.Clear();
+		state->SaveKeybinds();
 	}
 
 	FUCK::Spacing();
@@ -422,7 +592,6 @@ void DemoOverlay::Draw()
 	FUCK::Separator();
 
 	if (FUCK::Button("$DEMO_Close"_T)) {
-		DemoState::GetSingleton()->SaveSettings();
 		_isOpen = false;
 	}
 }

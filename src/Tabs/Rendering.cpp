@@ -41,44 +41,69 @@ void DemoState::DrawRenderingTab()
 
 	// --- OVERLAY SECTION ---
 	FUCK::Header("$DEMO_Section_Overlays"_T);
-	FUCK::Checkbox("$DEMO_ShowOverlay"_T, &_showOverlay, true, true);
+	bool changed = false;
+	changed |= FUCK::Checkbox("$DEMO_ShowOverlay"_T, &_cfg.showOverlay, true, true);
 
-	if (_showOverlay) {
+	if (_cfg.showOverlay) {
 		const char* overlayTypes[] = {
 			"$DEMO_Overlay_Grid"_T, "$DEMO_Overlay_Crosshair"_T,
 			"$DEMO_Overlay_Spiral"_T, "$DEMO_Overlay_GoldenGrid"_T,
 			"$DEMO_Overlay_Triangle"_T
 		};
-		FUCK::Combo("$DEMO_OverlayType"_T, &_overlayType, overlayTypes, 5);
+		changed |= FUCK::Combo("$DEMO_OverlayType"_T, &_cfg.overlayType, overlayTypes, 5);
 
-		FUCK::SliderFloat("$DEMO_Thickness"_T, &_overlayThickness, 0.5f, 10.0f, "%.1f px");
-		FUCK::ColorEdit3("$DEMO_Color"_T, _overlayColor, 0);
+		FUCK::SliderFloat("$DEMO_Thickness"_T, &_cfg.overlayThickness, 0.5f, 10.0f, "%.1f px");
+		if (FUCK::IsItemDeactivatedAfterEdit())
+			changed = true;
 
-		if (_overlayType == 0) {  // Grid
-			FUCK::SliderInt("$DEMO_GridRows"_T, &_gridRows, 0, 50);
-			FUCK::SliderInt("$DEMO_GridCols"_T, &_gridCols, 0, 50);
-			FUCK::SliderFloat("$DEMO_Rotation"_T, &_spiralRot, -45.0f, 45.0f, "%.0f deg");
-		} else if (_overlayType == 1) {  // Crosshair
-			FUCK::SliderInt("$DEMO_GridCols"_T, &_gridCols, 1, 10);
-			FUCK::SliderInt("$DEMO_GridRows"_T, &_gridRows, 1, 10);
-		} else if (_overlayType == 2) {  // Golden Spiral
+		FUCK::ColorEdit3("$DEMO_Color"_T, _cfg.overlayColor.data(), 0);
+		if (FUCK::IsItemDeactivatedAfterEdit())
+			changed = true;
+
+		if (_cfg.overlayType == 0) {  // Grid
+			FUCK::SliderInt("$DEMO_GridRows"_T, &_cfg.gridRows, 0, 50);
+			if (FUCK::IsItemDeactivatedAfterEdit())
+				changed = true;
+			FUCK::SliderInt("$DEMO_GridCols"_T, &_cfg.gridCols, 0, 50);
+			if (FUCK::IsItemDeactivatedAfterEdit())
+				changed = true;
+			FUCK::SliderFloat("$DEMO_Rotation"_T, &_cfg.spiralRot, -45.0f, 45.0f, "%.0f deg");
+			if (FUCK::IsItemDeactivatedAfterEdit())
+				changed = true;
+		} else if (_cfg.overlayType == 1) {  // Crosshair
+			FUCK::SliderInt("$DEMO_GridCols"_T, &_cfg.gridCols, 1, 10);
+			if (FUCK::IsItemDeactivatedAfterEdit())
+				changed = true;
+			FUCK::SliderInt("$DEMO_GridRows"_T, &_cfg.gridRows, 1, 10);
+			if (FUCK::IsItemDeactivatedAfterEdit())
+				changed = true;
+		} else if (_cfg.overlayType == 2) {  // Golden Spiral
 			const char* basicAnchors[] = {
 				"$DEMO_Anchor_BR"_T, "$DEMO_Anchor_BL"_T,
 				"$DEMO_Anchor_TL"_T, "$DEMO_Anchor_TR"_T,
 				"$DEMO_Anchor_Center"_T
 			};
-			FUCK::Combo("$DEMO_SpiralAnchor"_T, &_spiralAnchor, basicAnchors, 5);
-			FUCK::Checkbox("$DEMO_ShowSquares"_T, &_showSquares);
-			FUCK::SliderFloat("$DEMO_SpiralScale"_T, &_spiralScale, 0.1f, 5.0f);
-			FUCK::SliderFloat("$DEMO_Rotation"_T, &_spiralRot, -180.0f, 180.0f);
-			FUCK::SliderFloat("$DEMO_SpiralTurns"_T, &_spiralTurns, 1.0f, 20.0f);
-		} else if (_overlayType == 3) {  // Golden Grid
+			changed |= FUCK::Combo("$DEMO_SpiralAnchor"_T, &_cfg.spiralAnchor, basicAnchors, 5);
+			changed |= FUCK::Checkbox("$DEMO_ShowSquares"_T, &_cfg.showSquares);
+
+			FUCK::SliderFloat("$DEMO_SpiralScale"_T, &_cfg.spiralScale, 0.1f, 5.0f);
+			if (FUCK::IsItemDeactivatedAfterEdit())
+				changed = true;
+			FUCK::SliderFloat("$DEMO_Rotation"_T, &_cfg.spiralRot, -180.0f, 180.0f);
+			if (FUCK::IsItemDeactivatedAfterEdit())
+				changed = true;
+			FUCK::SliderFloat("$DEMO_SpiralTurns"_T, &_cfg.spiralTurns, 1.0f, 20.0f);
+			if (FUCK::IsItemDeactivatedAfterEdit())
+				changed = true;
+		} else if (_cfg.overlayType == 3) {  // Golden Grid
 			static int subDivs = 0;
 			FUCK::SliderInt("$DEMO_Subdivisions"_T, &subDivs, 0, 3);
-		} else if (_overlayType == 4) {  // Triangle
-			FUCK::Checkbox("$DEMO_Mirror"_T, &_triMirror);
+		} else if (_cfg.overlayType == 4) {  // Triangle
+			changed |= FUCK::Checkbox("$DEMO_Mirror"_T, &_cfg.triMirror);
 		}
 	}
+	if (changed)
+		DemoState::GetSingleton()->SaveSettings();
 
 	FUCK::Separator();
 
@@ -116,21 +141,21 @@ void DemoState::DrawRenderingTab()
 
 void DemoState::DrawOverlays()
 {
-	if (!_showOverlay)
+	if (!_cfg.showOverlay)
 		return;
 
-	ImU32 col = ImGui::ColorConvertFloat4ToU32(ImVec4(_overlayColor[0], _overlayColor[1], _overlayColor[2], _overlayColor[3]));
+	ImU32 col = ImGui::ColorConvertFloat4ToU32(ImVec4(_cfg.overlayColor[0], _cfg.overlayColor[1], _cfg.overlayColor[2], _cfg.overlayColor[3]));
 
-	if (_overlayType == 0) {  // Grid
-		FUCK::DrawGrid(_overlayThickness, col, static_cast<float>(_gridRows), static_cast<float>(_gridCols), _spiralRot);
-	} else if (_overlayType == 1) {  // Crosshair
-		FUCK::DrawCrosshair(_overlayThickness, col, static_cast<float>(_gridRows), static_cast<float>(_gridCols));
-	} else if (_overlayType == 2) {  // Golden Spiral
-		FUCK::DrawGoldenSpiral(_overlayThickness, col, _spiralAnchor, _spiralTurns, _spiralRot, _spiralScale, _showSquares);
-	} else if (_overlayType == 3) {  // Golden Grid
+	if (_cfg.overlayType == 0) {  // Grid
+		FUCK::DrawGrid(_cfg.overlayThickness, col, static_cast<float>(_cfg.gridRows), static_cast<float>(_cfg.gridCols), _cfg.spiralRot);
+	} else if (_cfg.overlayType == 1) {  // Crosshair
+		FUCK::DrawCrosshair(_cfg.overlayThickness, col, static_cast<float>(_cfg.gridRows), static_cast<float>(_cfg.gridCols));
+	} else if (_cfg.overlayType == 2) {  // Golden Spiral
+		FUCK::DrawGoldenSpiral(_cfg.overlayThickness, col, _cfg.spiralAnchor, _cfg.spiralTurns, _cfg.spiralRot, _cfg.spiralScale, _cfg.showSquares);
+	} else if (_cfg.overlayType == 3) {  // Golden Grid
 		static int subDivs = 0;
-		FUCK::DrawGoldenGrid(_overlayThickness, col, subDivs);
-	} else if (_overlayType == 4) {  // Triangle
-		FUCK::DrawTriangle(_overlayThickness, col, _triMirror);
+		FUCK::DrawGoldenGrid(_cfg.overlayThickness, col, subDivs);
+	} else if (_cfg.overlayType == 4) {  // Triangle
+		FUCK::DrawTriangle(_cfg.overlayThickness, col, _cfg.triMirror);
 	}
 }
