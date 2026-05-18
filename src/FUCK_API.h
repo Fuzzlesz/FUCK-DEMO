@@ -335,6 +335,7 @@ struct FUCK_Interface
 	bool (*IsWindowFocused)(int);
 	bool (*IsWindowHovered)(int);
 	bool (*IsMouseDown)(int);
+	bool (*IsMouseClicked)(int, bool);
 	bool (*IsMouseReleased)(int);
 	bool (*IsKeyDown)(ImGuiKey);
 	bool (*IsKeyPressed)(ImGuiKey, bool);
@@ -857,6 +858,7 @@ namespace FUCK
 	inline bool IsWindowFocused(int flags = 0) { return GetInterface() ? GetInterface()->IsWindowFocused(flags) : false; }
 	inline bool IsWindowHovered(int flags = 0) { return GetInterface() ? GetInterface()->IsWindowHovered(flags) : false; }
 	inline bool IsMouseDown(int button) { return GetInterface() ? GetInterface()->IsMouseDown(button) : false; }
+	inline bool IsMouseClicked(int button, bool repeat = false) { return GetInterface() ? GetInterface()->IsMouseClicked(button, repeat) : false; }
 	inline bool IsMouseReleased(int button) { return GetInterface() ? GetInterface()->IsMouseReleased(button) : false; }
 	inline bool IsKeyDown(ImGuiKey key) { return GetInterface() ? GetInterface()->IsKeyDown(key) : false; }
 	inline bool IsKeyPressed(ImGuiKey key, bool repeat = true) { return GetInterface() ? GetInterface()->IsKeyPressed(key, repeat) : false; }
@@ -1383,6 +1385,49 @@ namespace FUCK
 	private:
 		const char* _pluginName;
 	};
+
+	/// @brief Helper functions for delta saving/loading INI values with automatic default value handling.
+	namespace INI
+	{
+		inline void SaveBool(CSimpleIniA& ini, const char* sec, const char* key, bool val, bool defVal)
+		{
+			if (val == defVal)
+				ini.Delete(sec, key, true);
+			else
+				ini.SetBoolValue(sec, key, val);
+		}
+
+		/// Automatically handles mixed ints
+		template <typename T, typename U>
+		inline void SaveInt(CSimpleIniA& ini, const char* sec, const char* key, T val, U defVal)
+		{
+			static_assert(std::is_integral_v<T> && std::is_integral_v<U>, "FUCK::INI::SaveInt requires integral types.");
+			if (val == static_cast<T>(defVal)) {
+				ini.Delete(sec, key, true);
+			} else {
+				ini.SetLongValue(sec, key, static_cast<long>(val));
+			}
+		}
+
+		inline void SaveDouble(CSimpleIniA& ini, const char* sec, const char* key, double val, double defVal, const char* fmt = "%.2f")
+		{
+			if (std::abs(val - defVal) < 0.00001) {
+				ini.Delete(sec, key, true);
+			} else {
+				char buf[64];
+				snprintf(buf, sizeof(buf), fmt, val);
+				ini.SetValue(sec, key, buf);
+			}
+		}
+
+		inline void SaveString(CSimpleIniA& ini, const char* sec, const char* key, const char* val, const char* defVal)
+		{
+			if (strcmp(val, defVal) == 0)
+				ini.Delete(sec, key, true);
+			else
+				ini.SetValue(sec, key, val);
+		}
+	}
 
 	/// @brief RAII Wrapper for listening to Skyrim UI Menu events.
 	class MenuEventListener
