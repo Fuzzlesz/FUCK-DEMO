@@ -67,6 +67,12 @@ void DemoState::OnOpen()
 {
 	logger::info("Demo Tool Opened");
 
+	if (_cfg.inputBuffer[0] == '\0') {
+		const char* ph = "$DEMO_InputPlaceholder"_T;
+		if (ph)
+			strncpy_s(_cfg.inputBuffer, ph, sizeof(_cfg.inputBuffer));
+	}
+
 	if (_stepperOptions.empty()) {
 		_stepperOptions = {
 			"$DEMO_Stepper_Novice"_T,
