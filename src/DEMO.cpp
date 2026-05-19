@@ -121,76 +121,75 @@ bool DemoState::OnAsyncInput(const void* inputEvent)
 void DemoState::LoadSettings()
 {
 	GetSettings().Load([this](CSimpleIniA& ini) {
-		_cfg.chkNear = ini.GetBoolValue("Widgets", "ChkNear", _def.chkNear);
-		_cfg.chkMutexA = ini.GetBoolValue("Widgets", "MutexA", _def.chkMutexA);
-		_cfg.chkMutexB = ini.GetBoolValue("Widgets", "MutexB", _def.chkMutexB);
-		_cfg.chkFarA = ini.GetBoolValue("Widgets", "ChkFarA", _def.chkFarA);
-		_cfg.chkFarB = ini.GetBoolValue("Widgets", "ChkFarB", _def.chkFarB);
-		_cfg.toggleState = ini.GetBoolValue("Widgets", "ToggleState", _def.toggleState);
-		_cfg.sliderVal = static_cast<float>(ini.GetDoubleValue("Widgets", "SliderVal", _def.sliderVal));
-		_cfg.intVal = static_cast<std::int32_t>(ini.GetLongValue("Widgets", "IntVal", _def.intVal));
-		_cfg.dragFloat = static_cast<float>(ini.GetDoubleValue("Widgets", "DragFloat", _def.dragFloat));
-		_cfg.dragInt = static_cast<std::int32_t>(ini.GetLongValue("Widgets", "DragInt", _def.dragInt));
+		_cfg.chkNear     = FUCK::INI::LoadBool(ini, "Widgets", "ChkNear", _def.chkNear);
+		_cfg.chkMutexA   = FUCK::INI::LoadBool(ini, "Widgets", "MutexA", _def.chkMutexA);
+		_cfg.chkMutexB   = FUCK::INI::LoadBool(ini, "Widgets", "MutexB", _def.chkMutexB);
+		_cfg.chkFarA     = FUCK::INI::LoadBool(ini, "Widgets", "ChkFarA", _def.chkFarA);
+		_cfg.chkFarB     = FUCK::INI::LoadBool(ini, "Widgets", "ChkFarB", _def.chkFarB);
+		_cfg.toggleState = FUCK::INI::LoadBool(ini, "Widgets", "ToggleState", _def.toggleState);
+
+		_cfg.sliderVal = FUCK::INI::LoadFloat(ini, "Widgets", "SliderVal", _def.sliderVal);
+		_cfg.intVal    = FUCK::INI::LoadInt  (ini, "Widgets", "IntVal", _def.intVal);
+		_cfg.dragFloat = FUCK::INI::LoadFloat(ini, "Widgets", "DragFloat", _def.dragFloat);
+		_cfg.dragInt   = FUCK::INI::LoadInt  (ini, "Widgets", "DragInt", _def.dragInt);
 
 		const char* inputBuf = ini.GetValue("Widgets", "InputBuffer", nullptr);
 		if (inputBuf)
 			strncpy_s(_cfg.inputBuffer, inputBuf, sizeof(_cfg.inputBuffer));
 
-		_cfg.overlayPos.x = static_cast<float>(ini.GetDoubleValue("Overlay", "X", _def.overlayPos.x));
-		_cfg.overlayPos.y = static_cast<float>(ini.GetDoubleValue("Overlay", "Y", _def.overlayPos.y));
-		_cfg.overlaySize.x = static_cast<float>(ini.GetDoubleValue("Overlay", "Width", _def.overlaySize.x));
-		_cfg.overlaySize.y = static_cast<float>(ini.GetDoubleValue("Overlay", "Height", _def.overlaySize.y));
+		_cfg.overlayPos  = FUCK::INI::LoadScaledPos(ini, "Overlay", _def.overlayPos);
+		_cfg.overlaySize = FUCK::INI::LoadScaledSize(ini, "Overlay", _def.overlaySize);
 		if (_cfg.overlayPos.x != -1.0f && _cfg.overlayPos.y != -1.0f)
 			_overlay._hasLoadedPos = true;
 
-		_cfg.reqBlur = ini.GetBoolValue("OverlayFlags", "Blur", _def.reqBlur);
-		_cfg.reqHideHUD = ini.GetBoolValue("OverlayFlags", "HideHUD", _def.reqHideHUD);
-		_cfg.reqPauseHard = ini.GetBoolValue("OverlayFlags", "PauseHard", _def.reqPauseHard);
-		_cfg.reqPauseSoft = ini.GetBoolValue("OverlayFlags", "PauseSoft", _def.reqPauseSoft);
-		_cfg.reqCloseOnEsc = ini.GetBoolValue("OverlayFlags", "CloseOnEsc", _def.reqCloseOnEsc);
-		_cfg.reqCloseOnMenu = ini.GetBoolValue("OverlayFlags", "CloseOnMenu", _def.reqCloseOnMenu);
-		_cfg.reqPassInput = ini.GetBoolValue("OverlayFlags", "PassInput", _def.reqPassInput);
-		_cfg.reqBlockVanity = ini.GetBoolValue("OverlayFlags", "BlockVanity", _def.reqBlockVanity);
-		_cfg.reqNoBackground = ini.GetBoolValue("OverlayFlags", "NoBackground", _def.reqNoBackground);
-		_cfg.reqNoDecoration = ini.GetBoolValue("OverlayFlags", "NoDecoration", _def.reqNoDecoration);
-		_cfg.reqExtendBorder = ini.GetBoolValue("OverlayFlags", "ExtendBorder", _def.reqExtendBorder);
+		_cfg.reqBlur         = FUCK::INI::LoadBool(ini, "OverlayFlags", "Blur", _def.reqBlur);
+		_cfg.reqHideHUD      = FUCK::INI::LoadBool(ini, "OverlayFlags", "HideHUD", _def.reqHideHUD);
+		_cfg.reqPauseHard    = FUCK::INI::LoadBool(ini, "OverlayFlags", "PauseHard", _def.reqPauseHard);
+		_cfg.reqPauseSoft    = FUCK::INI::LoadBool(ini, "OverlayFlags", "PauseSoft", _def.reqPauseSoft);
+		_cfg.reqCloseOnEsc   = FUCK::INI::LoadBool(ini, "OverlayFlags", "CloseOnEsc", _def.reqCloseOnEsc);
+		_cfg.reqCloseOnMenu  = FUCK::INI::LoadBool(ini, "OverlayFlags", "CloseOnMenu", _def.reqCloseOnMenu);
+		_cfg.reqPassInput    = FUCK::INI::LoadBool(ini, "OverlayFlags", "PassInput", _def.reqPassInput);
+		_cfg.reqBlockVanity  = FUCK::INI::LoadBool(ini, "OverlayFlags", "BlockVanity", _def.reqBlockVanity);
+		_cfg.reqNoBackground = FUCK::INI::LoadBool(ini, "OverlayFlags", "NoBackground", _def.reqNoBackground);
+		_cfg.reqNoDecoration = FUCK::INI::LoadBool(ini, "OverlayFlags", "NoDecoration", _def.reqNoDecoration);
+		_cfg.reqExtendBorder = FUCK::INI::LoadBool(ini, "OverlayFlags", "ExtendBorder", _def.reqExtendBorder);
 
-		_cfg.secondOverlayPos.x = static_cast<float>(ini.GetDoubleValue("SecondWindow", "X", _def.secondOverlayPos.x));
-		_cfg.secondOverlayPos.y = static_cast<float>(ini.GetDoubleValue("SecondWindow", "Y", _def.secondOverlayPos.y));
-		_cfg.secondPassInput = ini.GetBoolValue("SecondWindow", "PassInput", _def.secondPassInput);
+		_cfg.secondOverlayPos = FUCK::INI::LoadScaledPos(ini, "SecondWindow", _def.secondOverlayPos);
+		_cfg.secondPassInput  = FUCK::INI::LoadBool     (ini, "SecondWindow", "PassInput", _def.secondPassInput);
 
-		_cfg.hudWidgetPos.x = static_cast<float>(ini.GetDoubleValue("HudWidget", "X", _def.hudWidgetPos.x));
-		_cfg.hudWidgetPos.y = static_cast<float>(ini.GetDoubleValue("HudWidget", "Y", _def.hudWidgetPos.y));
+		_cfg.hudWidgetPos = FUCK::INI::LoadScaledPos(ini, "HudWidget", _def.hudWidgetPos);
 		if (_cfg.hudWidgetPos.x != -1.0f && _cfg.hudWidgetPos.y != -1.0f)
 			_hudWidget._hasLoadedPos = true;
 
-		_cfg.hudKeepOpen = ini.GetBoolValue("HudWidget", "KeepOpen", _def.hudKeepOpen);
-		_cfg.hudScale = static_cast<float>(ini.GetDoubleValue("HudWidget", "Scale", _def.hudScale));
+		_cfg.hudKeepOpen = FUCK::INI::LoadBool (ini, "HudWidget", "KeepOpen", _def.hudKeepOpen);
+		_cfg.hudScale    = FUCK::INI::LoadFloat(ini, "HudWidget", "Scale", _def.hudScale);
 
-		_cfg.showOverlay = ini.GetBoolValue("Rendering", "ShowOverlay", _def.showOverlay);
-		_cfg.overlayType = static_cast<int>(ini.GetLongValue("Rendering", "OverlayType", _def.overlayType));
-		_cfg.overlayThickness = static_cast<float>(ini.GetDoubleValue("Rendering", "OverlayThickness", _def.overlayThickness));
-		_cfg.overlayColor[0] = static_cast<float>(ini.GetDoubleValue("Rendering", "OverlayColorR", _def.overlayColor[0]));
-		_cfg.overlayColor[1] = static_cast<float>(ini.GetDoubleValue("Rendering", "OverlayColorG", _def.overlayColor[1]));
-		_cfg.overlayColor[2] = static_cast<float>(ini.GetDoubleValue("Rendering", "OverlayColorB", _def.overlayColor[2]));
-		_cfg.overlayColor[3] = static_cast<float>(ini.GetDoubleValue("Rendering", "OverlayColorA", _def.overlayColor[3]));
-		_cfg.gridRows = static_cast<int>(ini.GetLongValue("Rendering", "GridRows", _def.gridRows));
-		_cfg.gridCols = static_cast<int>(ini.GetLongValue("Rendering", "GridCols", _def.gridCols));
-		_cfg.spiralAnchor = static_cast<int>(ini.GetLongValue("Rendering", "SpiralAnchor", _def.spiralAnchor));
-		_cfg.spiralRot = static_cast<float>(ini.GetDoubleValue("Rendering", "SpiralRot", _def.spiralRot));
-		_cfg.spiralScale = static_cast<float>(ini.GetDoubleValue("Rendering", "SpiralScale", _def.spiralScale));
-		_cfg.spiralTurns = static_cast<float>(ini.GetDoubleValue("Rendering", "SpiralTurns", _def.spiralTurns));
-		_cfg.showSquares = ini.GetBoolValue("Rendering", "ShowSquares", _def.showSquares);
-		_cfg.triMirror = ini.GetBoolValue("Rendering", "TriMirror", _def.triMirror);
+		_cfg.showOverlay      = FUCK::INI::LoadBool (ini, "Rendering", "ShowOverlay", _def.showOverlay);
+		_cfg.overlayType      = FUCK::INI::LoadInt  (ini, "Rendering", "OverlayType", _def.overlayType);
+		_cfg.overlayThickness = FUCK::INI::LoadFloat(ini, "Rendering", "OverlayThickness", _def.overlayThickness);
+
+		_cfg.overlayColor[0] = FUCK::INI::LoadFloat(ini, "Rendering", "OverlayColorR", _def.overlayColor[0]);
+		_cfg.overlayColor[1] = FUCK::INI::LoadFloat(ini, "Rendering", "OverlayColorG", _def.overlayColor[1]);
+		_cfg.overlayColor[2] = FUCK::INI::LoadFloat(ini, "Rendering", "OverlayColorB", _def.overlayColor[2]);
+		_cfg.overlayColor[3] = FUCK::INI::LoadFloat(ini, "Rendering", "OverlayColorA", _def.overlayColor[3]);
+
+		_cfg.gridRows     = FUCK::INI::LoadInt  (ini, "Rendering", "GridRows", _def.gridRows);
+		_cfg.gridCols     = FUCK::INI::LoadInt  (ini, "Rendering", "GridCols", _def.gridCols);
+		_cfg.spiralAnchor = FUCK::INI::LoadInt  (ini, "Rendering", "SpiralAnchor", _def.spiralAnchor);
+		_cfg.spiralRot    = FUCK::INI::LoadFloat(ini, "Rendering", "SpiralRot", _def.spiralRot);
+		_cfg.spiralScale  = FUCK::INI::LoadFloat(ini, "Rendering", "SpiralScale", _def.spiralScale);
+		_cfg.spiralTurns  = FUCK::INI::LoadFloat(ini, "Rendering", "SpiralTurns", _def.spiralTurns);
+		_cfg.showSquares  = FUCK::INI::LoadBool (ini, "Rendering", "ShowSquares", _def.showSquares);
+		_cfg.triMirror    = FUCK::INI::LoadBool (ini, "Rendering", "TriMirror", _def.triMirror);
 	});
 
 	GetSettings().LoadKeybinds([this](CSimpleIniA& ini) {
-		_toggleHotkey.kKey = static_cast<std::uint32_t>(ini.GetLongValue("Overlay", "Hotkey", _defHotkey.kKey));
-		_toggleHotkey.kMod1 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "Modifier1", _defHotkey.kMod1));
-		_toggleHotkey.kMod2 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "Modifier2", _defHotkey.kMod2));
-		_toggleHotkey.gKey = static_cast<std::uint32_t>(ini.GetLongValue("Overlay", "GPHotkey", _defHotkey.gKey));
-		_toggleHotkey.gMod1 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "GPModifier1", _defHotkey.gMod1));
-		_toggleHotkey.gMod2 = static_cast<std::int32_t>(ini.GetLongValue("Overlay", "GPModifier2", _defHotkey.gMod2));
+		_toggleHotkey.kKey  = FUCK::INI::LoadInt(ini, "Overlay", "Hotkey", _defHotkey.kKey);
+		_toggleHotkey.kMod1 = FUCK::INI::LoadInt(ini, "Overlay", "Modifier1", _defHotkey.kMod1);
+		_toggleHotkey.kMod2 = FUCK::INI::LoadInt(ini, "Overlay", "Modifier2", _defHotkey.kMod2);
+		_toggleHotkey.gKey  = FUCK::INI::LoadInt(ini, "Overlay", "GPHotkey", _defHotkey.gKey);
+		_toggleHotkey.gMod1 = FUCK::INI::LoadInt(ini, "Overlay", "GPModifier1", _defHotkey.gMod1);
+		_toggleHotkey.gMod2 = FUCK::INI::LoadInt(ini, "Overlay", "GPModifier2", _defHotkey.gMod2);
 	});
 }
 
@@ -198,25 +197,21 @@ void DemoState::SaveSettings()
 {
 	GetSettings().Save([this](CSimpleIniA& ini) {
 		// General Widgets
-		FUCK::INI::SaveBool(ini, "Widgets", "ChkNear", _cfg.chkNear, _def.chkNear);
-		FUCK::INI::SaveBool(ini, "Widgets", "MutexA", _cfg.chkMutexA, _def.chkMutexA);
-		FUCK::INI::SaveBool(ini, "Widgets", "MutexB", _cfg.chkMutexB, _def.chkMutexB);
-		FUCK::INI::SaveBool(ini, "Widgets", "ChkFarA", _cfg.chkFarA, _def.chkFarA);
-		FUCK::INI::SaveBool(ini, "Widgets", "ChkFarB", _cfg.chkFarB, _def.chkFarB);
-		FUCK::INI::SaveBool(ini, "Widgets", "ToggleState", _cfg.toggleState, _def.toggleState);
+		FUCK::INI::SaveBool  (ini, "Widgets", "ChkNear", _cfg.chkNear, _def.chkNear);
+		FUCK::INI::SaveBool  (ini, "Widgets", "MutexA", _cfg.chkMutexA, _def.chkMutexA);
+		FUCK::INI::SaveBool  (ini, "Widgets", "MutexB", _cfg.chkMutexB, _def.chkMutexB);
+		FUCK::INI::SaveBool  (ini, "Widgets", "ChkFarA", _cfg.chkFarA, _def.chkFarA);
+		FUCK::INI::SaveBool  (ini, "Widgets", "ChkFarB", _cfg.chkFarB, _def.chkFarB);
+		FUCK::INI::SaveBool  (ini, "Widgets", "ToggleState", _cfg.toggleState, _def.toggleState);
 		FUCK::INI::SaveDouble(ini, "Widgets", "SliderVal", _cfg.sliderVal, _def.sliderVal);
-		FUCK::INI::SaveInt(ini, "Widgets", "IntVal", _cfg.intVal, _def.intVal);
+		FUCK::INI::SaveInt   (ini, "Widgets", "IntVal", _cfg.intVal, _def.intVal);
 		FUCK::INI::SaveDouble(ini, "Widgets", "DragFloat", _cfg.dragFloat, _def.dragFloat);
-		FUCK::INI::SaveInt(ini, "Widgets", "DragInt", _cfg.dragInt, _def.dragInt);
+		FUCK::INI::SaveInt   (ini, "Widgets", "DragInt", _cfg.dragInt, _def.dragInt);
 		FUCK::INI::SaveString(ini, "Widgets", "InputBuffer", _cfg.inputBuffer, _def.inputBuffer);
 
 		// Overlay Position & Size
-		ImVec2 overlayDefPos = _overlay.GetDefaultPos();
-		ImVec2 overlayDefSize = _overlay.GetDefaultSize();
-		FUCK::INI::SaveDouble(ini, "Overlay", "X", _cfg.overlayPos.x, overlayDefPos.x);
-		FUCK::INI::SaveDouble(ini, "Overlay", "Y", _cfg.overlayPos.y, overlayDefPos.y);
-		FUCK::INI::SaveDouble(ini, "Overlay", "Width", _cfg.overlaySize.x, overlayDefSize.x);
-		FUCK::INI::SaveDouble(ini, "Overlay", "Height", _cfg.overlaySize.y, overlayDefSize.y);
+		FUCK::INI::SaveScaledPos (ini, "Overlay", _cfg.overlayPos, _def.overlayPos);
+		FUCK::INI::SaveScaledSize(ini, "Overlay", _cfg.overlaySize, _def.overlaySize);
 
 		// Overlay Flags
 		FUCK::INI::SaveBool(ini, "OverlayFlags", "Blur", _cfg.reqBlur, _def.reqBlur);
@@ -232,34 +227,30 @@ void DemoState::SaveSettings()
 		FUCK::INI::SaveBool(ini, "OverlayFlags", "ExtendBorder", _cfg.reqExtendBorder, _def.reqExtendBorder);
 
 		// Second Window
-		ImVec2 secDefPos = _secondOverlay.GetDefaultPos();
-		FUCK::INI::SaveDouble(ini, "SecondWindow", "X", _cfg.secondOverlayPos.x, secDefPos.x);
-		FUCK::INI::SaveDouble(ini, "SecondWindow", "Y", _cfg.secondOverlayPos.y, secDefPos.y);
-		FUCK::INI::SaveBool(ini, "SecondWindow", "PassInput", _cfg.secondPassInput, _def.secondPassInput);
+		FUCK::INI::SaveScaledPos(ini, "SecondWindow", _cfg.secondOverlayPos, _def.secondOverlayPos);
+		FUCK::INI::SaveBool     (ini, "SecondWindow", "PassInput", _cfg.secondPassInput, _def.secondPassInput);
 
 		// HUD Widget
-		ImVec2 hudDefPos = _hudWidget.GetDefaultPos();
-		FUCK::INI::SaveDouble(ini, "HudWidget", "X", _cfg.hudWidgetPos.x, hudDefPos.x);
-		FUCK::INI::SaveDouble(ini, "HudWidget", "Y", _cfg.hudWidgetPos.y, hudDefPos.y);
-		FUCK::INI::SaveBool(ini, "HudWidget", "KeepOpen", _cfg.hudKeepOpen, _def.hudKeepOpen);
-		FUCK::INI::SaveDouble(ini, "HudWidget", "Scale", _cfg.hudScale, _def.hudScale);
+		FUCK::INI::SaveScaledPos(ini, "HudWidget", _cfg.hudWidgetPos, _def.hudWidgetPos);
+		FUCK::INI::SaveBool     (ini, "HudWidget", "KeepOpen", _cfg.hudKeepOpen, _def.hudKeepOpen);
+		FUCK::INI::SaveDouble   (ini, "HudWidget", "Scale", _cfg.hudScale, _def.hudScale);
 
 		// Rendering
-		FUCK::INI::SaveBool(ini, "Rendering", "ShowOverlay", _cfg.showOverlay, _def.showOverlay);
-		FUCK::INI::SaveInt(ini, "Rendering", "OverlayType", _cfg.overlayType, _def.overlayType);
+		FUCK::INI::SaveBool  (ini, "Rendering", "ShowOverlay", _cfg.showOverlay, _def.showOverlay);
+		FUCK::INI::SaveInt   (ini, "Rendering", "OverlayType", _cfg.overlayType, _def.overlayType);
 		FUCK::INI::SaveDouble(ini, "Rendering", "OverlayThickness", _cfg.overlayThickness, _def.overlayThickness);
 		FUCK::INI::SaveDouble(ini, "Rendering", "OverlayColorR", _cfg.overlayColor[0], _def.overlayColor[0]);
 		FUCK::INI::SaveDouble(ini, "Rendering", "OverlayColorG", _cfg.overlayColor[1], _def.overlayColor[1]);
 		FUCK::INI::SaveDouble(ini, "Rendering", "OverlayColorB", _cfg.overlayColor[2], _def.overlayColor[2]);
 		FUCK::INI::SaveDouble(ini, "Rendering", "OverlayColorA", _cfg.overlayColor[3], _def.overlayColor[3]);
-		FUCK::INI::SaveInt(ini, "Rendering", "GridRows", _cfg.gridRows, _def.gridRows);
-		FUCK::INI::SaveInt(ini, "Rendering", "GridCols", _cfg.gridCols, _def.gridCols);
-		FUCK::INI::SaveInt(ini, "Rendering", "SpiralAnchor", _cfg.spiralAnchor, _def.spiralAnchor);
+		FUCK::INI::SaveInt   (ini, "Rendering", "GridRows", _cfg.gridRows, _def.gridRows);
+		FUCK::INI::SaveInt   (ini, "Rendering", "GridCols", _cfg.gridCols, _def.gridCols);
+		FUCK::INI::SaveInt   (ini, "Rendering", "SpiralAnchor", _cfg.spiralAnchor, _def.spiralAnchor);
 		FUCK::INI::SaveDouble(ini, "Rendering", "SpiralRot", _cfg.spiralRot, _def.spiralRot);
 		FUCK::INI::SaveDouble(ini, "Rendering", "SpiralScale", _cfg.spiralScale, _def.spiralScale);
 		FUCK::INI::SaveDouble(ini, "Rendering", "SpiralTurns", _cfg.spiralTurns, _def.spiralTurns);
-		FUCK::INI::SaveBool(ini, "Rendering", "ShowSquares", _cfg.showSquares, _def.showSquares);
-		FUCK::INI::SaveBool(ini, "Rendering", "TriMirror", _cfg.triMirror, _def.triMirror);
+		FUCK::INI::SaveBool  (ini, "Rendering", "ShowSquares", _cfg.showSquares, _def.showSquares);
+		FUCK::INI::SaveBool  (ini, "Rendering", "TriMirror", _cfg.triMirror, _def.triMirror);
 	});
 }
 
