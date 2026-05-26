@@ -70,7 +70,7 @@ void DemoState::OnOpen()
 	if (_cfg.inputBuffer[0] == '\0') {
 		const char* ph = "$DEMO_InputPlaceholder"_T;
 		if (ph)
-			strncpy_s(_cfg.inputBuffer, ph, sizeof(_cfg.inputBuffer));
+			FUCK::StringCopy(_cfg.inputBuffer, ph);
 	}
 
 	if (_stepperOptions.empty()) {
@@ -135,7 +135,7 @@ void DemoState::LoadSettings()
 
 		const char* inputBuf = ini.GetValue("Widgets", "InputBuffer", nullptr);
 		if (inputBuf)
-			strncpy_s(_cfg.inputBuffer, inputBuf, sizeof(_cfg.inputBuffer));
+			FUCK::StringCopy(_cfg.inputBuffer, inputBuf); 
 
 		_cfg.overlayPos  = FUCK::INI::LoadScaledPos(ini, "Overlay", _def.overlayPos);
 		_cfg.overlaySize = FUCK::INI::LoadScaledSize(ini, "Overlay", _def.overlaySize);
