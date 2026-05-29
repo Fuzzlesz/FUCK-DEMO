@@ -48,7 +48,7 @@ void DemoState::DrawGameControlTab()
 	FUCK::Header("$DEMO_Section_Utils"_T);
 
 	std::string demoDir = GetSettings().GetConfigDirectory();
-	FUCK::TextDisabled("Plugin Config Directory:");
+	FUCK::TextDisabled("$DEMO_PluginConfigDir"_T);
 	FUCK::TextWrapped("%s", demoDir.c_str());
 
 	FUCK::Spacing();
