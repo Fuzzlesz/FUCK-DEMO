@@ -115,8 +115,8 @@ void DemoState::DrawTablesTab()
 	FUCK::Spacing();
 
 	FUCK::TableFlags tableFlags = FUCK::TableFlags::kResizable | FUCK::TableFlags::kRowBg | FUCK::TableFlags::kBorders |
-	                        FUCK::TableFlags::kSortable | FUCK::TableFlags::kReorderable |
-	                        FUCK::TableFlags::kSizingStretchProp;
+	                              FUCK::TableFlags::kSortable | FUCK::TableFlags::kReorderable |
+	                              FUCK::TableFlags::kSizingStretchProp;
 
 	if (FUCK::BeginTable("FormInspectorTable", 5, tableFlags)) {
 		FUCK::TableSetupColumn("$DEMO_Col_ID"_T, FUCK::TableColumnFlags::kWidthStretch, 0.8f);
@@ -168,7 +168,7 @@ void DemoState::DrawTablesTab()
 			FUCK::Text("%08X", row.id);
 			FUCK::TableNextColumn();
 			FUCK::Text("%s", row.name.empty() ? row.editorID.c_str() : row.name.c_str());
-			if (!row.editorID.empty() && !row.name.empty() && FUCK::IsItemHovered(0))
+			if (!row.editorID.empty() && !row.name.empty())
 				FUCK::SetTooltip(row.editorID.c_str());
 			FUCK::TableNextColumn();
 			FUCK::Text("%s", row.typeStr.c_str());
