@@ -39,7 +39,7 @@ void DemoState::DrawInputIOTab()
 	FUCK::Text("$DEMO_KeyName"_T, FUCK::GetKeyName(_keyTestIndex));
 	FUCK::Text("$DEMO_IsDown"_T, FUCK::IsInputDown(_keyTestIndex) ? "YES" : "NO");
 
-	ImVec2 iconSize(48, 48);
+	ImVec2 iconSize = FUCK::Scale(48.0f, 48.0f);
 	ImTextureID keyIcon = FUCK::GetIconForKey(static_cast<std::uint32_t>(_keyTestIndex), &iconSize);
 	if (keyIcon) {
 		FUCK::DrawImage(keyIcon, iconSize);

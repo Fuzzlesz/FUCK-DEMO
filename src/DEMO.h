@@ -45,7 +45,11 @@ public:
 
 	FUCK::WindowFlags GetFlags() const override;
 
-	ImVec2 GetDefaultPos() const override { return { 100.0f, 100.0f }; }
+	ImVec2 GetDefaultPos() const override
+	{
+		return FUCK::Scale(100.0f, 100.0f);
+	}
+
 	ImVec2 GetDefaultSize() const override;
 	bool GetRequestedPos(ImVec2& outPos) override;
 	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override;

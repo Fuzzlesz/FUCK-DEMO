@@ -50,7 +50,7 @@ void DemoState::DrawLayoutStyleTab()
 	ImVec2 winSz = FUCK::GetWindowSize();
 	FUCK::Text("$DEMO_MetricSize"_T, winSz.x, winSz.y);
 
-	FUCK::Dummy(ImVec2(0, 20));
+	FUCK::Dummy(FUCK::Scale(0.0f, 20.0f));
 	FUCK::Text("$DEMO_AfterDummy"_T);
 
 	FUCK::Spacing();
@@ -58,7 +58,7 @@ void DemoState::DrawLayoutStyleTab()
 
 	FUCK::Header("$DEMO_Section_ChildWin"_T);
 	if (_useChildWindow) {
-		FUCK::BeginChild("DemoChild", ImVec2(300, 150), true);
+		FUCK::BeginChild("DemoChild", FUCK::Scale(300.0f, 150.0f), true);
 		FUCK::Text("$DEMO_ChildContent"_T);
 		FUCK::EndChild();
 	} else {

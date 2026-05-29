@@ -280,14 +280,12 @@ FUCK::WindowFlags SimpleOverlay::GetFlags() const
 
 ImVec2 SimpleOverlay::GetDefaultPos() const
 {
-	float scale = FUCK::GetResolutionScale();
-	return { DemoState::GetSingleton()->_def.secondOverlayPos.x * scale, DemoState::GetSingleton()->_def.secondOverlayPos.y * scale };
+	return FUCK::Scale(DemoState::GetSingleton()->_def.secondOverlayPos);
 }
 
 ImVec2 SimpleOverlay::GetDefaultSize() const
 {
-	float scale = FUCK::GetResolutionScale();
-	return { 400.0f * scale, 300.0f * scale };
+	return FUCK::Scale(400.0f, 300.0f);
 }
 
 bool SimpleOverlay::GetRequestedPos(ImVec2& outPos)
@@ -355,13 +353,11 @@ FUCK::WindowFlags HudWidget::GetFlags() const
 ImVec2 HudWidget::GetDefaultSize() const
 {
 	if (const_cast<HudWidget*>(this)->_hudImage.IsLoaded()) {
-		float s = FUCK::GetResolutionScale();
-		float padding = 12.0f * s;
-		return { (_hudImage.GetWidth() * s * DemoState::GetSingleton()->_cfg.hudScale) + (padding * 2.0f),
-			(_hudImage.GetHeight() * s * DemoState::GetSingleton()->_cfg.hudScale) + (padding * 2.0f) };
+		ImVec2 imageSize = FUCK::Scale(ImVec2(_hudImage.GetWidth() * DemoState::GetSingleton()->_cfg.hudScale, _hudImage.GetHeight() * DemoState::GetSingleton()->_cfg.hudScale));
+		float padding = FUCK::Scale(12.0f);
+		return { imageSize.x + (padding * 2.0f), imageSize.y + (padding * 2.0f) };
 	}
-	return { 100.0f, 100.0f };
-}
+	return FUCK::Scale(100.0f, 100.0f);
 
 bool HudWidget::GetRequestedPos(ImVec2& outPos)
 {
@@ -398,10 +394,8 @@ void HudWidget::Draw()
 	}
 
 	if (_hudImage.IsLoaded()) {
-		float resScale = FUCK::GetResolutionScale();
-		ImVec2 imageSize = { _hudImage.GetWidth() * resScale * cfg.hudScale, _hudImage.GetHeight() * resScale * cfg.hudScale };
-
-		float padding = 12.0f * resScale;
+		ImVec2 imageSize = FUCK::Scale(ImVec2(_hudImage.GetWidth() * cfg.hudScale, _hudImage.GetHeight() * cfg.hudScale));
+		float padding = FUCK::Scale(12.0f);
 		FUCK::SetCursorPos({ padding, padding });
 
 		ImVec2 pMin = FUCK::GetCursorScreenPos();
@@ -412,7 +406,7 @@ void HudWidget::Draw()
 		if (isInteractable) {
 			bool isHovered = FUCK::IsWindowHovered(0);
 
-			float gap = 4.0f * resScale;
+			float gap = FUCK::Scale(4.0f);
 			pMin.x -= gap;
 			pMin.y -= gap;
 			pMax.x += gap;
@@ -461,22 +455,20 @@ FUCK::WindowFlags DemoOverlay::GetFlags() const
 
 ImVec2 DemoOverlay::GetDefaultPos() const
 {
-	float scale = FUCK::GetResolutionScale();
 	ImVec2 displaySize = FUCK::GetDisplaySize();
 	ImVec2 scaledSize = GetDefaultSize();
 
-	float offset = 50.0f * scale;
+	float offset = FUCK::Scale(50.0f);
 
 	return {
 		displaySize.x - scaledSize.x - offset,
-		100.0f * scale
+		FUCK::Scale(100.0f)
 	};
 }
 
 ImVec2 DemoOverlay::GetDefaultSize() const
 {
-	float scale = FUCK::GetResolutionScale();
-	return { _baseSize.x * scale, _baseSize.y * scale };
+	return FUCK::Scale(_baseSize);
 }
 
 bool DemoOverlay::GetRequestedPos(ImVec2& outPos)
