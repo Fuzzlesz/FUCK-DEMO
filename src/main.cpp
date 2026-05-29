@@ -60,9 +60,8 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 		if (msg->type == SKSE::MessagingInterface::kDataLoaded) {
 			
 			// Connection logic
-			if (FUCK::Connect()) {
+			if (FUCK::Connect("FUCK-DEMO")) {
 				static_cast<void>(DemoState::GetSingleton());
-				FUCK::LoadTranslation("FUCK-DEMO");
 				SKSE::log::info("FUCK-DEMO Registered.");
 			} else {
 				logger::error("FUCK.dll not found or version mismatch. Tool disabled.");

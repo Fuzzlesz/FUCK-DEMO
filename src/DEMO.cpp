@@ -137,11 +137,6 @@ void DemoState::LoadSettings()
 		if (inputBuf)
 			FUCK::StringCopy(_cfg.inputBuffer, inputBuf); 
 
-		_cfg.overlayPos  = FUCK::INI::LoadScaledPos(ini, "Overlay", _def.overlayPos);
-		_cfg.overlaySize = FUCK::INI::LoadScaledSize(ini, "Overlay", _def.overlaySize);
-		if (_cfg.overlayPos.x != -1.0f && _cfg.overlayPos.y != -1.0f)
-			_overlay._hasLoadedPos = true;
-
 		_cfg.reqBlur         = FUCK::INI::LoadBool(ini, "OverlayFlags", "Blur", _def.reqBlur);
 		_cfg.reqHideHUD      = FUCK::INI::LoadBool(ini, "OverlayFlags", "HideHUD", _def.reqHideHUD);
 		_cfg.reqPauseHard    = FUCK::INI::LoadBool(ini, "OverlayFlags", "PauseHard", _def.reqPauseHard);
@@ -154,12 +149,7 @@ void DemoState::LoadSettings()
 		_cfg.reqNoDecoration = FUCK::INI::LoadBool(ini, "OverlayFlags", "NoDecoration", _def.reqNoDecoration);
 		_cfg.reqExtendBorder = FUCK::INI::LoadBool(ini, "OverlayFlags", "ExtendBorder", _def.reqExtendBorder);
 
-		_cfg.secondOverlayPos = FUCK::INI::LoadScaledPos(ini, "SecondWindow", _def.secondOverlayPos);
-		_cfg.secondPassInput  = FUCK::INI::LoadBool     (ini, "SecondWindow", "PassInput", _def.secondPassInput);
-
-		_cfg.hudWidgetPos = FUCK::INI::LoadScaledPos(ini, "HudWidget", _def.hudWidgetPos);
-		if (_cfg.hudWidgetPos.x != -1.0f && _cfg.hudWidgetPos.y != -1.0f)
-			_hudWidget._hasLoadedPos = true;
+		_cfg.secondPassInput  = FUCK::INI::LoadBool(ini, "SecondWindow", "PassInput", _def.secondPassInput);
 
 		_cfg.hudKeepOpen = FUCK::INI::LoadBool (ini, "HudWidget", "KeepOpen", _def.hudKeepOpen);
 		_cfg.hudScale    = FUCK::INI::LoadFloat(ini, "HudWidget", "Scale", _def.hudScale);
@@ -298,11 +288,6 @@ bool SimpleOverlay::GetRequestedPos(ImVec2& outPos)
 	return false;
 }
 
-void SimpleOverlay::UpdateState(const ImVec2& currentPos, const ImVec2& /*currentSize*/)
-{
-	DemoState::GetSingleton()->_cfg.secondOverlayPos = currentPos;
-}
-
 void SimpleOverlay::Draw()
 {
 	if (FUCK::Checkbox("$DEMO_Sec_PassInput"_T, &DemoState::GetSingleton()->_cfg.secondPassInput, false, false)) {
@@ -358,36 +343,12 @@ ImVec2 HudWidget::GetDefaultSize() const
 		return { imageSize.x + (padding * 2.0f), imageSize.y + (padding * 2.0f) };
 	}
 	return FUCK::Scale(100.0f, 100.0f);
-
-bool HudWidget::GetRequestedPos(ImVec2& outPos)
-{
-	if (_hasLoadedPos) {
-		outPos = DemoState::GetSingleton()->_cfg.hudWidgetPos;
-		return true;
-	}
-	return false;
-}
-
-void HudWidget::UpdateState(const ImVec2& currentPos, const ImVec2& /*currentSize*/)
-{
-	DemoState::GetSingleton()->_cfg.hudWidgetPos = currentPos;
-
-	if (_lastSavedPos.x == -1.0f) {
-		_lastSavedPos = currentPos;
-	}
 }
 
 void HudWidget::Draw()
 {
 	bool isInteractable = FUCK::IsMenuOpen();
 	auto& cfg = DemoState::GetSingleton()->_cfg;
-
-	if (isInteractable && FUCK::IsMouseReleased(0)) {
-		if (cfg.hudWidgetPos.x != _lastSavedPos.x || cfg.hudWidgetPos.y != _lastSavedPos.y) {
-			_lastSavedPos = cfg.hudWidgetPos;
-			DemoState::GetSingleton()->SaveSettings();
-		}
-	}
 
 	if (!_hudImage.IsLoaded()) {
 		_hudImage = FUCK::Image("Data/Interface/test.png", false);
@@ -471,42 +432,16 @@ ImVec2 DemoOverlay::GetDefaultSize() const
 	return FUCK::Scale(_baseSize);
 }
 
-bool DemoOverlay::GetRequestedPos(ImVec2& outPos)
-{
-	if (_hasLoadedPos) {
-		outPos = DemoState::GetSingleton()->_cfg.overlayPos;
-		return true;
-	}
-	return false;
-}
-
-void DemoOverlay::UpdateState(const ImVec2& currentPos, const ImVec2& currentSize)
-{
-	DemoState::GetSingleton()->_cfg.overlayPos = currentPos;
-	DemoState::GetSingleton()->_cfg.overlaySize = currentSize;
-
-	if (_lastSavedPos.x == -1.0f) {
-		_lastSavedPos = currentPos;
-		_lastSavedSize = currentSize;
-	}
-}
-
 void DemoOverlay::Draw()
 {
 	auto& cfg = DemoState::GetSingleton()->_cfg;
 
-	if (FUCK::IsMouseReleased(0)) {  // 0 = Left Mouse Button
-		if (cfg.overlayPos.x != _lastSavedPos.x || cfg.overlayPos.y != _lastSavedPos.y ||
-			cfg.overlaySize.x != _lastSavedSize.x || cfg.overlaySize.y != _lastSavedSize.y) {
-			_lastSavedPos = cfg.overlayPos;
-			_lastSavedSize = cfg.overlaySize;
-			DemoState::GetSingleton()->SaveSettings();
-		}
-	}
+	ImVec2 curPos = FUCK::GetWindowPos();
+	ImVec2 curSize = FUCK::GetWindowSize();
 
 	FUCK::Header("$DEMO_Section_WindowMetrics"_T);
-	FUCK::Text("$DEMO_MetricSize"_T, cfg.overlaySize.x, cfg.overlaySize.y);
-	FUCK::Text("$DEMO_MetricPos"_T, cfg.overlayPos.x, cfg.overlayPos.y);
+	FUCK::Text("$DEMO_MetricSize"_T, curSize.x, curSize.y);
+	FUCK::Text("$DEMO_MetricPos"_T, curPos.x, curPos.y);
 	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_WindowFlags"_T);

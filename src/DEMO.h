@@ -3,7 +3,7 @@
 
 inline FUCK::PluginSettings& GetSettings()
 {
-	static FUCK::PluginSettings s{ "FUCK-DEMO" };
+	static FUCK::PluginSettings s;
 	return s;
 }
 
@@ -14,6 +14,7 @@ inline FUCK::PluginSettings& GetSettings()
 class SimpleOverlay : public FUCK::IWindow
 {
 public:
+	const char* Id() const override { return "SimpleOverlay"; }
 	const char*	Title() const override { return "$DEMO_SecondOverlayTitle"_T; }
 	void		Draw() override;
 	bool		IsOpen() const override { return _isOpen; }
@@ -23,11 +24,9 @@ public:
 
 	ImVec2 GetDefaultPos() const override;
 	ImVec2 GetDefaultSize() const override;
-	bool GetRequestedPos(ImVec2& outPos) override;
+	bool   GetRequestedPos(ImVec2& outPos) override;
 
-	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override;
-
-	bool _isOpen = false;
+	bool     _isOpen = false;
 	IWindow* _parentWindow = nullptr;
 };
 
@@ -38,6 +37,7 @@ public:
 class HudWidget : public FUCK::IWindow
 {
 public:
+	const char* Id() const override { return "HudWidget"; }
 	const char* Title() const override { return "$DEMO_HudWidgetTitle"_T; }
 	void        Draw() override;
 	bool        IsOpen() const override { return _isOpen; }
@@ -51,14 +51,11 @@ public:
 	}
 
 	ImVec2 GetDefaultSize() const override;
-	bool GetRequestedPos(ImVec2& outPos) override;
-	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override;
 
 	bool _isOpen = false;
 	bool _wantOpen = false;
 	bool _hasLoadedPos = false;
 
-	ImVec2 _lastSavedPos{ -1.0f, -1.0f };
 	FUCK::Image _hudImage;
 };
 
@@ -69,27 +66,24 @@ public:
 class DemoOverlay : public FUCK::IWindow
 {
 public:
-	const char*			Title() const override { return "$DEMO_OverlayTitleHint"_T; }
-	void				Draw() override;
-	bool				IsOpen() const override { return _isOpen; }
-	void				SetOpen(bool a_open) override { _isOpen = a_open; }
-	FUCK::WindowFlags	GetFlags() const override;
+	const char* Id() const override { return "DemoOverlay"; }
+	const char*	Title() const override { return "$DEMO_OverlayTitleHint"_T; }
+	void		Draw() override;
+	bool		IsOpen() const override { return _isOpen; }
+	void		SetOpen(bool a_open) override { _isOpen = a_open; }
+
+	FUCK::WindowFlags GetFlags() const override;
 
 	ImVec2 GetDefaultSize() const override;
 	ImVec2 GetDefaultPos() const override;
-	bool GetRequestedPos(ImVec2& outPos) override;
-	void UpdateState(const ImVec2& currentPos, const ImVec2& currentSize) override;
 
 	bool _isOpen = false;
-	bool _hasLoadedPos = false;
-
-	ImVec2 _lastSavedPos{ -1.0f, -1.0f };
-	ImVec2 _lastSavedSize{ -1.0f, -1.0f };
 
 	const ImVec2 _baseSize{ 430.0f, 855.0f };
 
 	SimpleOverlay* _secondWindow = nullptr;
 };
+
 // ==========================================
 // Demo State Manager & Tools
 // ==========================================
