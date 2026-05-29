@@ -17,8 +17,8 @@
 #include <shlobj.h>
 #include <wrl/client.h>
 
-#include <ClibUtil/editorID.hpp>
 #include <ClibUtil/RNG.hpp>
+#include <ClibUtil/editorID.hpp>
 #include <ClibUtil/simpleINI.hpp>
 #include <ClibUtil/string.hpp>
 
@@ -32,7 +32,7 @@
 
 #define DLLEXPORT __declspec(dllexport)
 
-	using namespace std::literals;
+using namespace std::literals;
 using namespace clib_util;
 using namespace string::literals;
 using namespace RE::literals;

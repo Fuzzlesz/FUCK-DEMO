@@ -8,7 +8,7 @@ void DemoState::DrawAdvancedWidgetsTab()
 
 	FUCK::Header("$DEMO_Section_Combos"_T);
 
-	static int simpleCombo = 0;
+	static int  simpleCombo   = 0;
 	const char* simpleItems[] = {
 		"$DEMO_Combo_OptA"_T, "$DEMO_Combo_OptB"_T,
 		"$DEMO_Combo_OptC"_T, "$DEMO_Combo_OptD"_T
@@ -16,12 +16,12 @@ void DemoState::DrawAdvancedWidgetsTab()
 	FUCK::SetNextItemWidth(-1);
 	FUCK::Combo("$DEMO_ComboLabel"_T, &simpleCombo, simpleItems, 4);
 
-	static int filterComboItem = 0;
-	const char* filterItems[] = {
-		"$DEMO_Fruit_Apple"_T, "$DEMO_Fruit_Banana"_T,
-		"$DEMO_Fruit_Cherry"_T, "$DEMO_Fruit_Date"_T,
-		"$DEMO_Fruit_Elderberry"_T, "$DEMO_Fruit_Fig"_T,
-		"$DEMO_Fruit_Grape"_T, "$DEMO_Fruit_Honeydew"_T
+	static int  filterComboItem = 0;
+	const char* filterItems[]   = {
+        "$DEMO_Fruit_Apple"_T, "$DEMO_Fruit_Banana"_T,
+        "$DEMO_Fruit_Cherry"_T, "$DEMO_Fruit_Date"_T,
+        "$DEMO_Fruit_Elderberry"_T, "$DEMO_Fruit_Fig"_T,
+        "$DEMO_Fruit_Grape"_T, "$DEMO_Fruit_Honeydew"_T
 	};
 	FUCK::SetNextItemWidth(-1);
 	FUCK::ComboWithFilter("$DEMO_FilteredCombo"_T, &filterComboItem, filterItems, 8, 5);
@@ -30,18 +30,18 @@ void DemoState::DrawAdvancedWidgetsTab()
 
 	FUCK::Header("$DEMO_Section_FormCombo"_T);
 
-	static std::uint8_t formType = 0;
-	static int formTypeCombo = 0;
-	const char* formTypes[] = {
-		"$DEMO_FormType_All0"_T, "$DEMO_FormType_Wep41"_T,
-		"$DEMO_FormType_Arm26"_T, "$DEMO_FormType_Pot46"_T,
-		"$DEMO_FormType_Spl21"_T, "$DEMO_FormType_NPC43"_T
+	static std::uint8_t formType      = 0;
+	static int          formTypeCombo = 0;
+	const char*         formTypes[]   = {
+        "$DEMO_FormType_All0"_T, "$DEMO_FormType_Wep41"_T,
+        "$DEMO_FormType_Arm26"_T, "$DEMO_FormType_Pot46"_T,
+        "$DEMO_FormType_Spl21"_T, "$DEMO_FormType_NPC43"_T
 	};
 	static const std::uint8_t formTypeValues[] = { 0, 41, 26, 46, 21, 43 };
 
 	FUCK::SetNextItemWidth(-1);
 	if (FUCK::Combo("$DEMO_FormFilterLabel"_T, &formTypeCombo, formTypes, 6)) {
-		formType = formTypeValues[formTypeCombo];
+		formType        = formTypeValues[formTypeCombo];
 		_selectedFormID = 0;
 	}
 

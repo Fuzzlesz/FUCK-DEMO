@@ -15,10 +15,10 @@ class SimpleOverlay : public FUCK::IWindow
 {
 public:
 	const char* Id() const override { return "SimpleOverlay"; }
-	const char*	Title() const override { return "$DEMO_SecondOverlayTitle"_T; }
-	void		Draw() override;
-	bool		IsOpen() const override { return _isOpen; }
-	void		SetOpen(bool a_open) override { _isOpen = a_open; }
+	const char* Title() const override { return "$DEMO_SecondOverlayTitle"_T; }
+	void        Draw() override;
+	bool        IsOpen() const override { return _isOpen; }
+	void        SetOpen(bool a_open) override { _isOpen = a_open; }
 
 	FUCK::WindowFlags GetFlags() const override;
 
@@ -26,7 +26,7 @@ public:
 	ImVec2 GetDefaultSize() const override;
 	bool   GetRequestedPos(ImVec2& outPos) override;
 
-	bool     _isOpen = false;
+	bool     _isOpen       = false;
 	IWindow* _parentWindow = nullptr;
 };
 
@@ -52,8 +52,8 @@ public:
 
 	ImVec2 GetDefaultSize() const override;
 
-	bool _isOpen = false;
-	bool _wantOpen = false;
+	bool _isOpen       = false;
+	bool _wantOpen     = false;
 	bool _hasLoadedPos = false;
 
 	FUCK::Image _hudImage;
@@ -67,10 +67,10 @@ class DemoOverlay : public FUCK::IWindow
 {
 public:
 	const char* Id() const override { return "DemoOverlay"; }
-	const char*	Title() const override { return "$DEMO_OverlayTitleHint"_T; }
-	void		Draw() override;
-	bool		IsOpen() const override { return _isOpen; }
-	void		SetOpen(bool a_open) override { _isOpen = a_open; }
+	const char* Title() const override { return "$DEMO_OverlayTitleHint"_T; }
+	void        Draw() override;
+	bool        IsOpen() const override { return _isOpen; }
+	void        SetOpen(bool a_open) override { _isOpen = a_open; }
 
 	FUCK::WindowFlags GetFlags() const override;
 
@@ -91,64 +91,66 @@ public:
 class DemoState : public REX::Singleton<DemoState>
 {
 public:
-	struct DemoConfig {
+	struct DemoConfig
+	{
 		// Basic Widgets
-		bool chkNear = false;
-		bool chkMutexA = true;
-		bool chkMutexB = false;
-		bool chkFarA = false;
-		bool chkFarB = true;
-		bool toggleState = false;
-		float sliderVal = 50.0f;
-		std::int32_t intVal = 5;
-		float dragFloat = 0.5f;
-		std::int32_t dragInt = 10;
-		char inputBuffer[256] = { 0 };
+		bool         chkNear          = false;
+		bool         chkMutexA        = true;
+		bool         chkMutexB        = false;
+		bool         chkFarA          = false;
+		bool         chkFarB          = true;
+		bool         toggleState      = false;
+		float        sliderVal        = 50.0f;
+		std::int32_t intVal           = 5;
+		float        dragFloat        = 0.5f;
+		std::int32_t dragInt          = 10;
+		char         inputBuffer[256] = { 0 };
 
 		// Overlays
 		ImVec2 overlayPos{ -1.0f, -1.0f };
 		ImVec2 overlaySize{ -1.0f, -1.0f };
-		bool reqBlur = false;
-		bool reqHideHUD = false;
-		bool reqPauseHard = false;
-		bool reqPauseSoft = false;
-		bool reqCloseOnEsc = false;
-		bool reqCloseOnMenu = false;
-		bool reqPassInput = false;
-		bool reqBlockVanity = false;
-		bool reqNoBackground = false;
-		bool reqNoDecoration = false;
-		bool reqExtendBorder = false;
+		bool   reqBlur         = false;
+		bool   reqHideHUD      = false;
+		bool   reqPauseHard    = false;
+		bool   reqPauseSoft    = false;
+		bool   reqCloseOnEsc   = false;
+		bool   reqCloseOnMenu  = false;
+		bool   reqPassInput    = false;
+		bool   reqBlockVanity  = false;
+		bool   reqNoBackground = false;
+		bool   reqNoDecoration = false;
+		bool   reqExtendBorder = false;
 
 		ImVec2 secondOverlayPos{ 800.0f, 400.0f };
-		bool secondPassInput = false;
+		bool   secondPassInput = false;
 
 		ImVec2 hudWidgetPos{ -1.0f, -1.0f };
-		bool hudKeepOpen = false;
-		float hudScale = 1.0f;
-		
+		bool   hudKeepOpen = false;
+		float  hudScale    = 1.0f;
+
 		// Rendering Overlays Demo
-		bool showOverlay = false;
-		int overlayType = 0;
-		float overlayThickness = 2.0f;
-		std::array<float, 4> overlayColor = { 1.0f, 1.0f, 1.0f, 0.5f };
-		int gridRows = 10;
-		int gridCols = 10;
-		int spiralAnchor = 0;
-		float spiralRot = 0.0f;
-		float spiralScale = 1.0f;
-		float spiralTurns = 6.0f;
-		bool showSquares = false;
-		bool triMirror = false;
+		bool                 showOverlay      = false;
+		int                  overlayType      = 0;
+		float                overlayThickness = 2.0f;
+		std::array<float, 4> overlayColor     = { 1.0f, 1.0f, 1.0f, 0.5f };
+		int                  gridRows         = 10;
+		int                  gridCols         = 10;
+		int                  spiralAnchor     = 0;
+		float                spiralRot        = 0.0f;
+		float                spiralScale      = 1.0f;
+		float                spiralTurns      = 6.0f;
+		bool                 showSquares      = false;
+		bool                 triMirror        = false;
 	};
 
-	struct HotkeyConfig {
-		std::uint32_t kKey = 35; // H
-		std::int32_t kMod1 = 42; // Shift
-		std::int32_t kMod2 = -1;
-		std::uint32_t gKey = 0;
-		std::int32_t gMod1 = -1;
-		std::int32_t gMod2 = -1;
+	struct HotkeyConfig
+	{
+		std::uint32_t kKey  = 35;  // H
+		std::int32_t  kMod1 = 42;  // Shift
+		std::int32_t  kMod2 = -1;
+		std::uint32_t gKey  = 0;
+		std::int32_t  gMod1 = -1;
+		std::int32_t  gMod2 = -1;
 	};
 
 	DemoState();
@@ -169,37 +171,37 @@ public:
 	class ToolGeneral : public FUCK::ITool
 	{
 	public:
-		const char*	Name() const override { return "$DEMO_Tool_General"_T; }
-		const char*	Group() const override { return nullptr; }  // Top level
-		void		Draw() override;
-		void		RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
-		void		OnOpen() override { DemoState::GetSingleton()->OnOpen(); }
-		void		OnClose() override { DemoState::GetSingleton()->OnClose(); }
-		bool		OnAsyncInput(const void* e) override { return DemoState::GetSingleton()->OnAsyncInput(e); }
+		const char* Name() const override { return "$DEMO_Tool_General"_T; }
+		const char* Group() const override { return nullptr; }  // Top level
+		void        Draw() override;
+		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
+		void        OnOpen() override { DemoState::GetSingleton()->OnOpen(); }
+		void        OnClose() override { DemoState::GetSingleton()->OnClose(); }
+		bool        OnAsyncInput(const void* e) override { return DemoState::GetSingleton()->OnAsyncInput(e); }
 	};
 
 	// 2. Visuals Tool (Grouped)
 	class ToolVisuals : public FUCK::ITool
 	{
 	public:
-		const char*	Name() const override { return "$DEMO_Tool_Visuals"_T; }
-		const char*	Group() const override { return "$DEMO_Group_Advanced"_T; }  // Grouped
-		void		Draw() override;
-		void		RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
+		const char* Name() const override { return "$DEMO_Tool_Visuals"_T; }
+		const char* Group() const override { return "$DEMO_Group_Advanced"_T; }  // Grouped
+		void        Draw() override;
+		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 	};
 
 	// 3. System Tool (Grouped)
 	class ToolSystem : public FUCK::ITool
 	{
 	public:
-		const char*	Name() const override { return "$DEMO_Tool_System"_T; }
-		const char*	Group() const override { return "$DEMO_Group_Advanced"_T; }  // Grouped
-		void		Draw() override;
-		void		RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
+		const char* Name() const override { return "$DEMO_Tool_System"_T; }
+		const char* Group() const override { return "$DEMO_Group_Advanced"_T; }  // Grouped
+		void        Draw() override;
+		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 	};
 
-	DemoConfig _cfg;
-	const DemoConfig _def;
+	DemoConfig         _cfg;
+	const DemoConfig   _def;
 	const HotkeyConfig _defHotkey;
 
 	FUCK::ManagedHotkey _toggleHotkey;
@@ -217,52 +219,52 @@ private:
 	void DrawIconsTab();
 
 	// Feature Demos
-	int _iconBtnClicks = 0;
-	bool _useChildWindow = false;
-	bool _showSpinner = false;
+	int  _iconBtnClicks   = 0;
+	bool _useChildWindow  = false;
+	bool _showSpinner     = false;
 	bool _renderSuspended = false;
 
 	FUCK::Image _loadedImage;
-	char _ImagePath[256] = "Data/Interface/test.png";
+	char        _ImagePath[256] = "Data/Interface/test.png";
 
 	// Input Capture Demo
-	int _keyTestIndex = 1;
-	bool _inputCaptured = false;
+	int           _keyTestIndex   = 1;
+	bool          _inputCaptured  = false;
 	std::uint32_t _lastPressedKey = 0;
 
 	// Game State
 	bool _vanityBlocked = false;
-	bool _hardPaused = false;
-	bool _softPaused = false;
-	bool _cursorForced = false;
+	bool _hardPaused    = false;
+	bool _softPaused    = false;
+	bool _cursorForced  = false;
 
 	// Form Inspector
 	struct FormRow
 	{
 		std::uint32_t id;
-		std::string name;
-		std::string editorID;
-		std::string typeStr;
-		float weight;
-		std::int32_t value;
+		std::string   name;
+		std::string   editorID;
+		std::string   typeStr;
+		float         weight;
+		std::int32_t  value;
 	};
 	std::vector<FormRow> _formRows;
-	std::uint32_t _comboSelectedFormID = 0;
+	std::uint32_t        _comboSelectedFormID = 0;
 
 	// Utilities
-	char _pathBuffer[256] = "Data/My Bad\\Path//File.dds";
+	char _pathBuffer[256]      = "Data/My Bad\\Path//File.dds";
 	char _sanitizedBuffer[256] = { 0 };
 
-	std::uint32_t _selectedFormID = 0;
-	int _stepperValue = 0;
+	std::uint32_t            _selectedFormID = 0;
+	int                      _stepperValue   = 0;
 	std::vector<std::string> _stepperOptions;
 
-	DemoOverlay _overlay;
+	DemoOverlay   _overlay;
 	SimpleOverlay _secondOverlay;
-	HudWidget _hudWidget;
+	HudWidget     _hudWidget;
 
 	// Tool Instances
 	ToolGeneral _toolGeneral;
 	ToolVisuals _toolVisuals;
-	ToolSystem _toolSystem;
+	ToolSystem  _toolSystem;
 };

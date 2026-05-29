@@ -7,7 +7,7 @@
 DemoState::DemoState()
 {
 	// Link Overlays
-	_overlay._secondWindow = &_secondOverlay;
+	_overlay._secondWindow       = &_secondOverlay;
 	_secondOverlay._parentWindow = &_overlay;
 
 	// Pre-load the image so the window creation instantly knows the correct bounds
@@ -92,8 +92,8 @@ void DemoState::OnClose()
 bool DemoState::OnAsyncInput(const void* inputEvent)
 {
 	if (_inputCaptured) {
-		std::uint32_t key = 0;
-		std::int32_t mod1 = -1, mod2 = -1;
+		std::uint32_t key  = 0;
+		std::int32_t  mod1 = -1, mod2 = -1;
 
 		if (FUCK::GetInputBind(inputEvent, &key, &mod1, &mod2) == FUCK::BindResult::kBound) {
 			_lastPressedKey = key;
@@ -339,7 +339,7 @@ ImVec2 HudWidget::GetDefaultSize() const
 {
 	if (const_cast<HudWidget*>(this)->_hudImage.IsLoaded()) {
 		ImVec2 imageSize = FUCK::Scale(ImVec2(_hudImage.GetWidth() * DemoState::GetSingleton()->_cfg.hudScale, _hudImage.GetHeight() * DemoState::GetSingleton()->_cfg.hudScale));
-		float padding = FUCK::Scale(12.0f);
+		float  padding   = FUCK::Scale(12.0f);
 		return { imageSize.x + (padding * 2.0f), imageSize.y + (padding * 2.0f) };
 	}
 	return FUCK::Scale(100.0f, 100.0f);
@@ -347,8 +347,8 @@ ImVec2 HudWidget::GetDefaultSize() const
 
 void HudWidget::Draw()
 {
-	bool isInteractable = FUCK::IsMenuOpen();
-	auto& cfg = DemoState::GetSingleton()->_cfg;
+	bool  isInteractable = FUCK::IsMenuOpen();
+	auto& cfg            = DemoState::GetSingleton()->_cfg;
 
 	if (!_hudImage.IsLoaded()) {
 		_hudImage = FUCK::Image("Data/Interface/test.png", false);
@@ -356,7 +356,7 @@ void HudWidget::Draw()
 
 	if (_hudImage.IsLoaded()) {
 		ImVec2 imageSize = FUCK::Scale(ImVec2(_hudImage.GetWidth() * cfg.hudScale, _hudImage.GetHeight() * cfg.hudScale));
-		float padding = FUCK::Scale(12.0f);
+		float  padding   = FUCK::Scale(12.0f);
 		FUCK::SetCursorPos({ padding, padding });
 
 		ImVec2 pMin = FUCK::GetCursorScreenPos();
@@ -387,7 +387,7 @@ void HudWidget::Draw()
 
 FUCK::WindowFlags DemoOverlay::GetFlags() const
 {
-	auto& cfg = DemoState::GetSingleton()->_cfg;
+	auto&             cfg   = DemoState::GetSingleton()->_cfg;
 	FUCK::WindowFlags flags = FUCK::WindowFlags::kNone;
 	if (cfg.reqBlur)
 		flags = flags | FUCK::WindowFlags::kBlurBackground;
@@ -417,7 +417,7 @@ FUCK::WindowFlags DemoOverlay::GetFlags() const
 ImVec2 DemoOverlay::GetDefaultPos() const
 {
 	ImVec2 displaySize = FUCK::GetDisplaySize();
-	ImVec2 scaledSize = GetDefaultSize();
+	ImVec2 scaledSize  = GetDefaultSize();
 
 	float offset = FUCK::Scale(50.0f);
 
@@ -436,7 +436,7 @@ void DemoOverlay::Draw()
 {
 	auto& cfg = DemoState::GetSingleton()->_cfg;
 
-	ImVec2 curPos = FUCK::GetWindowPos();
+	ImVec2 curPos  = FUCK::GetWindowPos();
 	ImVec2 curSize = FUCK::GetWindowSize();
 
 	FUCK::Header("$DEMO_Section_WindowMetrics"_T);
@@ -494,10 +494,10 @@ void DemoOverlay::Draw()
 	FUCK::Spacing();
 
 	if (FUCK::Button("$DEMO_ResetHotkey"_T)) {
-		state->_toggleHotkey.kKey = state->_defHotkey.kKey;
+		state->_toggleHotkey.kKey  = state->_defHotkey.kKey;
 		state->_toggleHotkey.kMod1 = state->_defHotkey.kMod1;
 		state->_toggleHotkey.kMod2 = state->_defHotkey.kMod2;
-		state->_toggleHotkey.gKey = state->_defHotkey.gKey;
+		state->_toggleHotkey.gKey  = state->_defHotkey.gKey;
 		state->_toggleHotkey.gMod1 = state->_defHotkey.gMod1;
 		state->_toggleHotkey.gMod2 = state->_defHotkey.gMod2;
 		state->SaveKeybinds();

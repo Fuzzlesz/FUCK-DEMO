@@ -24,7 +24,7 @@ void DemoState::DrawRenderingTab()
 
 		FUCK::Text("$DEMO_ImageSize"_T, w, h);
 		float availW = FUCK::GetContentRegionAvail().x;
-		float scale = (w > availW) ? availW / w : 1.0f;
+		float scale  = (w > availW) ? availW / w : 1.0f;
 
 		FUCK::DrawImage(_loadedImage.GetID(), ImVec2(w * scale, h * scale));
 	}

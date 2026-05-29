@@ -14,7 +14,7 @@ void InitializeLog()
 
 	*path /= std::format("{}.log", Version::PROJECT);
 	auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
-	auto log = std::make_shared<spdlog::logger>("global log", std::move(sink));
+	auto log  = std::make_shared<spdlog::logger>("global log", std::move(sink));
 
 	log->set_level(spdlog::level::info);
 	log->flush_on(spdlog::level::info);
@@ -40,8 +40,8 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
 	a_info->infoVersion = SKSE::PluginInfo::kVersion;
-	a_info->name = "FUCK-DEMO";
-	a_info->version = Version::MAJOR;
+	a_info->name        = "FUCK-DEMO";
+	a_info->version     = Version::MAJOR;
 
 	if (a_skse->IsEditor()) {
 		return false;
@@ -58,7 +58,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	const auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener([](SKSE::MessagingInterface::Message* msg) {
 		if (msg->type == SKSE::MessagingInterface::kDataLoaded) {
-			
 			// Connection logic
 			if (FUCK::Connect("FUCK-DEMO")) {
 				static_cast<void>(DemoState::GetSingleton());

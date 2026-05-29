@@ -10,21 +10,21 @@ void DemoState::DrawTablesTab()
 	FUCK::TextWrapped("$DEMO_FormInspDesc"_T);
 	FUCK::Spacing();
 
-	static std::uint8_t formType = 0;
-	static int formTypeCombo = 0;
-	const char* formTypes[] = {
-		"$DEMO_FT_All"_T,          // 0
-		"$DEMO_FT_Weapon"_T,       // 41
-		"$DEMO_FT_Ammo"_T,         // 42
-		"$DEMO_FT_Armor"_T,        // 26
-		"$DEMO_FT_Potion"_T,       // 46
-		"$DEMO_FT_Ingredient"_T,   // 30
-		"$DEMO_FT_Spell"_T,        // 22
-		"$DEMO_FT_Enchantment"_T,  // 21
-		"$DEMO_FT_Scroll"_T,       // 23
-		"$DEMO_FT_SoulGem"_T,      // 52
-		"$DEMO_FT_NPC"_T,          // 43
-		"$DEMO_FT_Key"_T           // 45
+	static std::uint8_t formType      = 0;
+	static int          formTypeCombo = 0;
+	const char*         formTypes[]   = {
+        "$DEMO_FT_All"_T,          // 0
+        "$DEMO_FT_Weapon"_T,       // 41
+        "$DEMO_FT_Ammo"_T,         // 42
+        "$DEMO_FT_Armor"_T,        // 26
+        "$DEMO_FT_Potion"_T,       // 46
+        "$DEMO_FT_Ingredient"_T,   // 30
+        "$DEMO_FT_Spell"_T,        // 22
+        "$DEMO_FT_Enchantment"_T,  // 21
+        "$DEMO_FT_Scroll"_T,       // 23
+        "$DEMO_FT_SoulGem"_T,      // 52
+        "$DEMO_FT_NPC"_T,          // 43
+        "$DEMO_FT_Key"_T           // 45
 	};
 
 	static const std::uint8_t formTypeValues[] = {
@@ -33,7 +33,7 @@ void DemoState::DrawTablesTab()
 
 	FUCK::SetNextItemWidth(-1);
 	if (FUCK::Combo("$DEMO_FilterType"_T, &formTypeCombo, formTypes, IM_ARRAYSIZE(formTypes))) {
-		formType = formTypeValues[formTypeCombo];
+		formType             = formTypeValues[formTypeCombo];
 		_comboSelectedFormID = 0;
 	}
 
@@ -46,8 +46,8 @@ void DemoState::DrawTablesTab()
 			auto* form = RE::TESForm::LookupByID(_comboSelectedFormID);
 			if (form) {
 				FormRow newRow;
-				newRow.id = form->GetFormID();
-				newRow.name = form->GetName();
+				newRow.id       = form->GetFormID();
+				newRow.name     = form->GetName();
 				newRow.editorID = clib_util::editorID::get_editorID(form);
 
 				switch (form->GetFormType()) {
@@ -132,8 +132,8 @@ void DemoState::DrawTablesTab()
 				std::vector<FormRow>* rows = &_formRows;  // capture pointers for lambda
 				std::sort(rows->begin(), rows->end(), [sorts_specs](const FormRow& a, const FormRow& b) {
 					for (int n = 0; n < sorts_specs->SpecsCount; n++) {
-						const ImGuiTableColumnSortSpecs* spec = &sorts_specs->Specs[n];
-						int delta = 0;
+						const ImGuiTableColumnSortSpecs* spec  = &sorts_specs->Specs[n];
+						int                              delta = 0;
 						switch (spec->ColumnIndex) {
 						case 0:
 							delta = (a.id < b.id) ? -1 : (a.id > b.id ? 1 : 0);
