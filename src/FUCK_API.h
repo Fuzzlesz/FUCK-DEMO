@@ -3,9 +3,9 @@
 
 #define FUCK_API_VERSION 1
 
-// ============================================================================
+// ==================================================
 // [ SECTION 1 ] TYPES & INTERFACES
-// ============================================================================
+// ==================================================
 
 namespace FUCK
 {
@@ -55,6 +55,14 @@ namespace FUCK
 		kHovered    // Bright Green
 	};
 
+	enum class TableBgTarget
+	{
+		kNone   = 0,
+		kRowBg0 = 1,
+		kRowBg1 = 2,
+		kCellBg = 3
+	};
+
 	// --- Bitflags ---
 	enum class WindowFlags
 	{
@@ -102,20 +110,39 @@ namespace FUCK
 	enum class TableColumnFlags
 	{
 		kNone                 = 0,
-		kDefaultSort          = 1 << 0,
-		kWidthStretch         = 1 << 1,
-		kWidthFixed           = 1 << 2,
-		kNoResize             = 1 << 3,
-		kNoReorder            = 1 << 4,
-		kNoHide               = 1 << 5,
-		kNoClip               = 1 << 6,
-		kNoSort               = 1 << 7,
-		kNoSortAscending      = 1 << 8,
-		kNoSortDescending     = 1 << 9,
-		kPreferSortAscending  = 1 << 10,
-		kPreferSortDescending = 1 << 11,
-		kIndentEnable         = 1 << 12,
-		kIndentDisable        = 1 << 13
+		kDisabled             = 1 << 0,
+		kDefaultHide          = 1 << 1,
+		kDefaultSort          = 1 << 2,
+		kWidthStretch         = 1 << 3,
+		kWidthFixed           = 1 << 4,
+		kNoResize             = 1 << 5,
+		kNoReorder            = 1 << 6,
+		kNoHide               = 1 << 7,
+		kNoClip               = 1 << 8,
+		kNoSort               = 1 << 9,
+		kNoSortAscending      = 1 << 10,
+		kNoSortDescending     = 1 << 11,
+		kNoHeaderLabel        = 1 << 12,
+		kNoHeaderWidth        = 1 << 13,
+		kPreferSortAscending  = 1 << 14,
+		kPreferSortDescending = 1 << 15,
+		kIndentEnable         = 1 << 16,
+		kIndentDisable        = 1 << 17
+	};
+
+	enum class DragDropFlags
+	{
+		kNone                     = 0,
+		kSourceNoPreviewTooltip   = 1 << 0,
+		kSourceNoDisableHover     = 1 << 1,
+		kSourceNoHoldToOpenOthers = 1 << 2,
+		kSourceAllowNullID        = 1 << 3,
+		kSourceExtern             = 1 << 4,
+		kSourceAutoExpirePayload  = 1 << 5,
+		kAcceptBeforeDelivery     = 1 << 10,
+		kAcceptNoDrawDefaultRect  = 1 << 11,
+		kAcceptNoPreviewTooltip   = 1 << 12,
+		kAcceptPeekOnly           = kAcceptBeforeDelivery | kAcceptNoDrawDefaultRect
 	};
 
 	enum class ItemFlags
@@ -123,13 +150,16 @@ namespace FUCK
 		kNone         = 0,
 		kNoTabStop    = 1 << 0,
 		kButtonRepeat = 1 << 1,
-		kNoNav        = 1 << 2
+		kDisabled     = 1 << 2,
+		kNoNav        = 1 << 3
 	};
 
 	inline WindowFlags      operator|(WindowFlags a, WindowFlags b) { return static_cast<WindowFlags>(static_cast<int>(a) | static_cast<int>(b)); }
 	inline bool             operator&(WindowFlags a, WindowFlags b) { return (static_cast<int>(a) & static_cast<int>(b)) != 0; }
 	inline TableFlags       operator|(TableFlags a, TableFlags b) { return static_cast<TableFlags>(static_cast<int>(a) | static_cast<int>(b)); }
 	inline TableColumnFlags operator|(TableColumnFlags a, TableColumnFlags b) { return static_cast<TableColumnFlags>(static_cast<int>(a) | static_cast<int>(b)); }
+	inline DragDropFlags    operator|(DragDropFlags a, DragDropFlags b) { return static_cast<DragDropFlags>(static_cast<int>(a) | static_cast<int>(b)); }
+	inline bool             operator&(DragDropFlags a, DragDropFlags b) { return (static_cast<int>(a) & static_cast<int>(b)) != 0; }
 	inline ItemFlags        operator|(ItemFlags a, ItemFlags b) { return static_cast<ItemFlags>(static_cast<int>(a) | static_cast<int>(b)); }
 	inline bool             operator&(ItemFlags a, ItemFlags b) { return (static_cast<int>(a) & static_cast<int>(b)) != 0; }
 
@@ -204,7 +234,8 @@ namespace FUCK
 		/// @brief Display title shown on the Window chrome. Translates natively if a localized string key is passed.
 		virtual const char* Title() const = 0;
 
-		virtual void        Draw()               = 0;
+		virtual void        Draw() = 0;
+		virtual void        RenderOverlay() {}
 		virtual bool        IsOpen() const       = 0;
 		virtual void        SetOpen(bool a_open) = 0;
 		virtual WindowFlags GetFlags() const { return WindowFlags::kNone; }
@@ -219,9 +250,9 @@ namespace FUCK
 	};
 }
 
-// ============================================================================
+// ==================================================
 // [ SECTION 2 ] C-ABI INTERFACE
-// ============================================================================
+// ==================================================
 
 #pragma pack(push, 1)
 struct FUCK_Interface
@@ -235,6 +266,8 @@ struct FUCK_Interface
 
 	// Display
 	float (*GetResolutionScale)();
+	float (*GetGlobalScale)();
+	float (*GetUserScale)();
 	void (*GetDisplaySize)(float*, float*);
 	void (*TranslateScaleformToScreen)(float, float, float*, float*);
 	ImFont* (*GetFont)(FUCK::Font);
@@ -246,6 +279,7 @@ struct FUCK_Interface
 
 	// IO
 	float (*GetDeltaTime)();
+	double (*GetTime)();
 	void (*GetMouseDelta)(float*, float*);
 	void (*GetMousePos)(float*, float*);
 	float (*GetMouseWheel)();
@@ -259,6 +293,7 @@ struct FUCK_Interface
 	float (*GetStyleVar)(ImGuiStyleVar);
 	void (*GetStyleVarVec)(ImGuiStyleVar, float*, float*);
 	void (*GetStyleColorVec4)(ImGuiCol, float*, float*, float*, float*);
+	void (*SetWindowFontScale)(float);
 
 	// Layout
 	void (*SetCursorPosX)(float);
@@ -280,6 +315,7 @@ struct FUCK_Interface
 	void (*Separator)();
 	void (*SeparatorThick)();
 	void (*SeparatorText)(const char*);
+	float (*GetColumnWidth)(int);
 
 	// Metrics
 	float (*GetTextLineHeight)();
@@ -303,6 +339,7 @@ struct FUCK_Interface
 	void (*HelpMarker)(const char*);
 	void (*PushID_Str)(const char*);
 	void (*PushID_Int)(int);
+	void (*PushID_Ptr)(const void*);
 	void (*PopID)();
 
 	// Menu Events
@@ -364,6 +401,13 @@ struct FUCK_Interface
 	void (*SetKeyboardFocusHere)(int);
 	void (*SetItemDefaultFocus)();
 
+	bool (*BeginDragDropSource)(int);
+	bool (*SetDragDropPayload)(const char*, const void*, size_t, int);
+	void (*EndDragDropSource)();
+	bool (*BeginDragDropTarget)();
+	const ImGuiPayload* (*AcceptDragDropPayload)(const char*, int);
+	void (*EndDragDropTarget)();
+
 	// Drawing Primitives
 	void (*DrawRect)(const ImVec2&, const ImVec2&, const ImVec4&, float, float);
 	void (*DrawRectFilled)(const ImVec2&, const ImVec2&, const ImVec4&, float);
@@ -399,6 +443,7 @@ struct FUCK_Interface
 
 	// Widgets
 	bool (*Button)(const char*);
+	bool (*InvisibleButton)(const char*, const ImVec2&, int);
 	bool (*Checkbox)(const char*, bool*, bool, bool);
 	bool (*Hotkey)(const char*, std::uint32_t, std::int32_t, std::int32_t, bool, bool, bool);
 	bool (*ToggleButton)(const char*, bool*, bool, bool);
@@ -441,6 +486,7 @@ struct FUCK_Interface
 	void (*TableNextRow)(int, float);
 	bool (*TableNextColumn)();
 	void (*TableHeadersRow)();
+	void (*TableSetBgColor)(int, ImU32, int);
 
 	void (*Columns)(int, const char*, bool);
 	void (*NextColumn)();
@@ -462,15 +508,15 @@ struct FUCK_Interface
 };
 #pragma pack(pop)
 
-// ============================================================================
+// ==================================================
 // [ SECTION 3 ] C++ PUBLIC API WRAPPER
-// ============================================================================
+// ==================================================
 
 namespace FUCK
 {
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 	// Init & Registration
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 
 	inline FUCK_Interface*& GetInterface()
 	{
@@ -480,8 +526,13 @@ namespace FUCK
 
 	/// @brief Connects to the FUCK Host Framework.
 	/// @param pluginName The exact name of your SKSE plugin. Used automatically for translations and settings directories.
-	inline bool Connect(const char* pluginName = nullptr, unsigned int a_minVersion = FUCK_API_VERSION)
+	inline bool Connect(const char* pluginName, unsigned int a_minVersion = FUCK_API_VERSION)
 	{
+		if (!pluginName || pluginName[0] == '\0') {
+			SKSE::log::error("FUCK API Connection failed: You must provide a valid pluginName.");
+			return false;
+		}
+
 		auto handle = GetModuleHandleW(L"FUCK.dll");
 		if (!handle)
 			return false;
@@ -490,19 +541,17 @@ namespace FUCK
 			return false;
 		auto* iface = static_cast<FUCK_Interface*>(fetcher());
 		if (!iface || iface->version < a_minVersion) {
-			logger::error("FUCK API Version Mismatch: Expected {}, found {}", a_minVersion, iface ? iface->version : 0);
+			SKSE::log::error("FUCK API Version Mismatch: Expected {}, found {}", a_minVersion, iface ? iface->version : 0);
 			return false;
 		}
 
 		GetInterface() = iface;
 
 		// --- Cache the plugin name globally for this DLL ---
-		if (pluginName) {
-			g_pluginName = pluginName;
-			GetInterface()->LoadTranslation(pluginName);
-		}
+		g_pluginName = pluginName;
+		GetInterface()->LoadTranslation(pluginName);
 
-		logger::info("Connected to FUCK API version {}", iface->version);
+		SKSE::log::info("Connected to FUCK API version {}", iface->version);
 		return true;
 	}
 
@@ -522,21 +571,28 @@ namespace FUCK
 			i->UnregisterWindow(window);
 	}
 
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 	// Display, Styles, Metrics
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 
-	/// @brief Gets the current screen resolution scale multiplier.
+	/// @brief Gets the physical screen resolution scale multiplier (Base 1080p).
 	inline float GetResolutionScale() { return GetInterface() ? GetInterface()->GetResolutionScale() : 1.0f; }
 
-	/// @brief Automatically scales a scalar value by the current resolution scale.
-	inline float Scale(float value) { return value * GetResolutionScale(); }
+	/// @brief Gets the overall screen resolution combined with the user's selected UI Size Slider multiplier.
+	inline float GetGlobalScale() { return GetInterface() ? GetInterface()->GetGlobalScale() : 1.0f; }
 
-	/// @brief Automatically scales an X and Y coordinate by the current resolution scale.
+	/// @brief Gets the user's custom UI Size Slider multiplier.
+	inline float GetUserScale() { return GetInterface() ? GetInterface()->GetUserScale() : 1.0f; }
+
+	/// @brief Scales by the Monitor Resolution.
+	inline float  Scale(float value) { return value * GetResolutionScale(); }
 	inline ImVec2 Scale(float x, float y) { return ImVec2(x * GetResolutionScale(), y * GetResolutionScale()); }
-
-	/// @brief Automatically scales an ImVec2 by the current resolution scale.
 	inline ImVec2 Scale(const ImVec2& value) { return ImVec2(value.x * GetResolutionScale(), value.y * GetResolutionScale()); }
+
+	/// @brief Scales by both Resolution and the User's UI Size slider.
+	inline float  UIScale(float value) { return value * GetGlobalScale(); }
+	inline ImVec2 UIScale(float x, float y) { return ImVec2(x * GetGlobalScale(), y * GetGlobalScale()); }
+	inline ImVec2 UIScale(const ImVec2& value) { return ImVec2(value.x * GetGlobalScale(), value.y * GetGlobalScale()); }
 
 	inline ImVec2 GetDisplaySize()
 	{
@@ -591,6 +647,11 @@ namespace FUCK
 		if (auto i = GetInterface())
 			i->PopFont();
 	}
+	inline void SetWindowFontScale(float scale)
+	{
+		if (auto i = GetInterface())
+			i->SetWindowFontScale(scale);
+	}
 
 	inline void PushStyleColor(ImGuiCol idx, const ImVec4& col)
 	{
@@ -639,9 +700,9 @@ namespace FUCK
 	inline float GetFrameHeight() { return GetInterface() ? GetInterface()->GetFrameHeight() : 0.0f; }
 	inline float GetFrameHeightWithSpacing() { return GetInterface() ? GetInterface()->GetFrameHeightWithSpacing() : 0.0f; }
 
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 	// Layout & Cursor
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 
 	inline void SetCursorPosX(float x)
 	{
@@ -801,6 +862,11 @@ namespace FUCK
 		if (auto i = GetInterface())
 			i->PushID_Int(int_id);
 	}
+	inline void PushID(const void* ptr_id)
+	{
+		if (auto i = GetInterface())
+			i->PushID_Ptr(ptr_id);
+	}
 	inline void PopID()
 	{
 		if (auto i = GetInterface())
@@ -817,11 +883,12 @@ namespace FUCK
 			i->PopItemFlag();
 	}
 
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 	// Game State & Input Control
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 
 	inline float  GetDeltaTime() { return GetInterface() ? GetInterface()->GetDeltaTime() : 0.0f; }
+	inline double GetTime() { return GetInterface() ? GetInterface()->GetTime() : 0.0; }
 	inline ImVec2 GetMouseDelta()
 	{
 		ImVec2 p(0, 0);
@@ -885,9 +952,9 @@ namespace FUCK
 	inline BindResult UpdateBinding(const void* inputEvent, std::uint32_t* outKey, std::int32_t* outMod1, std::int32_t* outMod2) { return GetInterface() ? GetInterface()->UpdateBinding(inputEvent, outKey, outMod1, outMod2) : BindResult::kNone; }
 	inline BindResult GetInputBind(const void* inputEvent, std::uint32_t* outKey, std::int32_t* outMod1, std::int32_t* outMod2) { return GetInterface() ? GetInterface()->GetInputBind(inputEvent, outKey, outMod1, outMod2) : BindResult::kNone; }
 
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 	// Widgets & Interaction
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 
 	inline bool IsItemHovered(int flags = 0) { return GetInterface() ? GetInterface()->IsItemHovered(flags) : false; }
 	inline bool IsItemClicked(int mouse_button = 0) { return GetInterface() ? GetInterface()->IsItemClicked(mouse_button) : false; }
@@ -904,6 +971,7 @@ namespace FUCK
 	inline bool IsMouseReleased(int button) { return GetInterface() ? GetInterface()->IsMouseReleased(button) : false; }
 	inline bool IsKeyDown(ImGuiKey key) { return GetInterface() ? GetInterface()->IsKeyDown(key) : false; }
 	inline bool IsKeyPressed(ImGuiKey key, bool repeat = true) { return GetInterface() ? GetInterface()->IsKeyPressed(key, repeat) : false; }
+
 	inline void SetKeyboardFocusHere(int offset = 0)
 	{
 		if (auto i = GetInterface())
@@ -916,7 +984,23 @@ namespace FUCK
 	}
 	inline bool IsWidgetFocused(const char* label) { return GetInterface() ? GetInterface()->IsWidgetFocused(label) : false; }
 
+	inline bool BeginDragDropSource(DragDropFlags flags = DragDropFlags::kNone) { return GetInterface() ? GetInterface()->BeginDragDropSource(static_cast<int>(flags)) : false; }
+	inline bool SetDragDropPayload(const char* type, const void* data, size_t sz, int cond = 0) { return GetInterface() ? GetInterface()->SetDragDropPayload(type, data, sz, cond) : false; }
+	inline void EndDragDropSource()
+	{
+		if (auto i = GetInterface())
+			i->EndDragDropSource();
+	}
+	inline bool                BeginDragDropTarget() { return GetInterface() ? GetInterface()->BeginDragDropTarget() : false; }
+	inline const ImGuiPayload* AcceptDragDropPayload(const char* type, DragDropFlags flags = DragDropFlags::kNone) { return GetInterface() ? GetInterface()->AcceptDragDropPayload(type, static_cast<int>(flags)) : nullptr; }
+	inline void                EndDragDropTarget()
+	{
+		if (auto i = GetInterface())
+			i->EndDragDropTarget();
+	}
+
 	inline bool Button(const char* label) { return GetInterface() ? GetInterface()->Button(label) : false; }
+	inline bool InvisibleButton(const char* str_id, const ImVec2& size, int flags = 0) { return GetInterface() ? GetInterface()->InvisibleButton(str_id, size, flags) : false; }
 	inline bool Checkbox(const char* label, bool* v, bool alignFar = true, bool labelLeft = true) { return GetInterface() ? GetInterface()->Checkbox(label, v, alignFar, labelLeft) : false; }
 	inline bool Hotkey(const char* label, std::uint32_t key, std::int32_t modifier, std::int32_t modifier2, bool alignFar = true, bool labelLeft = true, bool flashing = false) { return GetInterface() ? GetInterface()->Hotkey(label, key, modifier, modifier2, alignFar, labelLeft, flashing) : false; }
 	inline bool ToggleButton(const char* label, bool* v, bool alignFar = true, bool labelLeft = true) { return GetInterface() ? GetInterface()->ToggleButton(label, v, alignFar, labelLeft) : false; }
@@ -1037,9 +1121,9 @@ namespace FUCK
 			i->Stepper(label, text, outLeft, outRight);
 	}
 
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 	// Windows & Containers
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 
 	inline bool BeginWindow(const char* name, bool* p_open = nullptr, int flags = 0) { return GetInterface() ? GetInterface()->BeginWindow(name, p_open, flags) : false; }
 	inline void EndWindow()
@@ -1162,6 +1246,17 @@ namespace FUCK
 			i->EndTable();
 	}
 
+	inline void TableSetBgColor(TableBgTarget target, ImU32 color, int column_n = -1)
+	{
+		if (auto i = GetInterface())
+			i->TableSetBgColor(static_cast<int>(target), color, column_n);
+	}
+
+	inline float GetColumnWidth(int column_index = -1)
+	{
+		return GetInterface() ? GetInterface()->GetColumnWidth(column_index) : 0.0f;
+	}
+
 	/// @brief Utility to capture a Table Column's width ratio upon releasing the mouse.
 	/// Returns true when the weight has meaningfully changed so you can selectively trigger a config save.
 	inline bool UpdateProportionalWeight(float& inOutWeight, float totalWidth)
@@ -1205,9 +1300,9 @@ namespace FUCK
 			i->NextColumn();
 	}
 
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 	// Drawing & Assets
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 
 	inline ImTextureID GetIconForKey(std::uint32_t key, ImVec2* outSize = nullptr)
 	{
@@ -1299,9 +1394,9 @@ namespace FUCK
 			i->DrawScreenLine(p1.x, p1.y, p2.x, p2.y, col, thickness);
 	}
 
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 	// Strings & Utilities
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 
 	inline const char* Translate(const char* key) { return GetInterface() ? GetInterface()->GetTranslation(key) : key; }
 	inline void        LoadTranslation(const char* pluginName)
@@ -1331,9 +1426,9 @@ namespace FUCK
 			i->RemoveMenuListener(userdata);
 	}
 
-	// ============================================================================
+	// ==================================================
 	// [ SECTION 4 ] SMART WRAPPERS & UTILITIES
-	// ============================================================================
+	// ==================================================
 
 	/// @brief Safe Resource-Acquisition-Is-Initialization wrapper for custom Images.
 	class Image
@@ -1553,49 +1648,6 @@ namespace FUCK
 			const char* val = ini.GetValue(sec, key, defVal);
 			strncpy_s(dest, N, val, _TRUNCATE);
 		}
-
-		// --- Window Geometry Helpers ---
-		inline ImVec2 LoadScaledPos(const CSimpleIniA& ini, const char* sec, const ImVec2& defUnscaled)
-		{
-			float scale = GetResolutionScale();
-			if (scale < 0.1f)
-				scale = 1.0f;
-			float x = static_cast<float>(ini.GetDoubleValue(sec, "X", defUnscaled.x));
-			float y = static_cast<float>(ini.GetDoubleValue(sec, "Y", defUnscaled.y));
-			return ImVec2((x == -1.0f) ? -1.0f : (x * scale), (y == -1.0f) ? -1.0f : (y * scale));
-		}
-
-		inline ImVec2 LoadScaledSize(const CSimpleIniA& ini, const char* sec, const ImVec2& defUnscaled)
-		{
-			float scale = GetResolutionScale();
-			if (scale < 0.1f)
-				scale = 1.0f;
-			float w = static_cast<float>(ini.GetDoubleValue(sec, "Width", defUnscaled.x));
-			float h = static_cast<float>(ini.GetDoubleValue(sec, "Height", defUnscaled.y));
-			return ImVec2((w == -1.0f) ? -1.0f : (w * scale), (h == -1.0f) ? -1.0f : (h * scale));
-		}
-
-		inline void SaveScaledPos(CSimpleIniA& ini, const char* sec, const ImVec2& curScaled, const ImVec2& defUnscaled)
-		{
-			float scale = GetResolutionScale();
-			if (scale < 0.1f)
-				scale = 1.0f;
-			float unscaledX = (curScaled.x == -1.0f) ? -1.0f : (curScaled.x / scale);
-			float unscaledY = (curScaled.y == -1.0f) ? -1.0f : (curScaled.y / scale);
-			SaveDouble(ini, sec, "X", unscaledX, defUnscaled.x);
-			SaveDouble(ini, sec, "Y", unscaledY, defUnscaled.y);
-		}
-
-		inline void SaveScaledSize(CSimpleIniA& ini, const char* sec, const ImVec2& curScaled, const ImVec2& defUnscaled)
-		{
-			float scale = GetResolutionScale();
-			if (scale < 0.1f)
-				scale = 1.0f;
-			float unscaledW = (curScaled.x == -1.0f) ? -1.0f : (curScaled.x / scale);
-			float unscaledH = (curScaled.y == -1.0f) ? -1.0f : (curScaled.y / scale);
-			SaveDouble(ini, sec, "Width", unscaledW, defUnscaled.x);
-			SaveDouble(ini, sec, "Height", unscaledH, defUnscaled.y);
-		}
 	}
 
 	/// @brief RAII Wrapper for listening to Skyrim UI Menu events.
@@ -1672,9 +1724,9 @@ namespace FUCK
 		}
 	}
 
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 	// Overloads & Templates
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------
 
 	/// @brief Standardized visual for UI widget editing. Handles both Screen-Space and Window-Space rendering.
 	inline void DrawEditorBounds(const ImVec2& min, const ImVec2& max, EditorBoundsState state = EditorBoundsState::kNormal, float thickness = 2.0f, bool screenSpace = false, const ImVec2* customAnchor = nullptr)
@@ -1797,9 +1849,9 @@ namespace FUCK
 	}
 }  // namespace FUCK
 
-// ============================================================================
+// ==================================================
 // [ SECTION 5 ] GLOBAL LITERALS
-// ============================================================================
+// ==================================================
 
 /// @brief String literal to automatically run FUCK::Translate
 inline const char* operator""_T(const char* str, std::size_t)
