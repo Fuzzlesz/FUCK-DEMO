@@ -199,10 +199,6 @@ void DemoState::SaveSettings()
 		FUCK::INI::SaveInt   (ini, "Widgets", "DragInt", _cfg.dragInt, _def.dragInt);
 		FUCK::INI::SaveString(ini, "Widgets", "InputBuffer", _cfg.inputBuffer, _def.inputBuffer);
 
-		// Overlay Position & Size
-		FUCK::INI::SaveScaledPos (ini, "Overlay", _cfg.overlayPos, _def.overlayPos);
-		FUCK::INI::SaveScaledSize(ini, "Overlay", _cfg.overlaySize, _def.overlaySize);
-
 		// Overlay Flags
 		FUCK::INI::SaveBool(ini, "OverlayFlags", "Blur", _cfg.reqBlur, _def.reqBlur);
 		FUCK::INI::SaveBool(ini, "OverlayFlags", "HideHUD", _cfg.reqHideHUD, _def.reqHideHUD);
@@ -217,11 +213,9 @@ void DemoState::SaveSettings()
 		FUCK::INI::SaveBool(ini, "OverlayFlags", "ExtendBorder", _cfg.reqExtendBorder, _def.reqExtendBorder);
 
 		// Second Window
-		FUCK::INI::SaveScaledPos(ini, "SecondWindow", _cfg.secondOverlayPos, _def.secondOverlayPos);
 		FUCK::INI::SaveBool     (ini, "SecondWindow", "PassInput", _cfg.secondPassInput, _def.secondPassInput);
 
 		// HUD Widget
-		FUCK::INI::SaveScaledPos(ini, "HudWidget", _cfg.hudWidgetPos, _def.hudWidgetPos);
 		FUCK::INI::SaveBool     (ini, "HudWidget", "KeepOpen", _cfg.hudKeepOpen, _def.hudKeepOpen);
 		FUCK::INI::SaveDouble   (ini, "HudWidget", "Scale", _cfg.hudScale, _def.hudScale);
 
@@ -270,22 +264,12 @@ FUCK::WindowFlags SimpleOverlay::GetFlags() const
 
 ImVec2 SimpleOverlay::GetDefaultPos() const
 {
-	return FUCK::Scale(DemoState::GetSingleton()->_def.secondOverlayPos);
+	return FUCK::Scale(800.0f, 400.0f);
 }
 
 ImVec2 SimpleOverlay::GetDefaultSize() const
 {
-	return FUCK::Scale(400.0f, 300.0f);
-}
-
-bool SimpleOverlay::GetRequestedPos(ImVec2& outPos)
-{
-	auto cfgPos = DemoState::GetSingleton()->_cfg.secondOverlayPos;
-	if (cfgPos.x > 0.0f || cfgPos.y > 0.0f) {
-		outPos = cfgPos;
-		return true;
-	}
-	return false;
+	return FUCK::UIScale(400.0f, 300.0f);
 }
 
 void SimpleOverlay::Draw()
@@ -333,6 +317,11 @@ FUCK::WindowFlags HudWidget::GetFlags() const
 		flags = flags | FUCK::WindowFlags::kCloseOnGameMenu;
 
 	return flags;
+}
+
+ImVec2 HudWidget::GetDefaultPos() const
+{
+	return FUCK::Scale(100.0f, 100.0f);
 }
 
 ImVec2 HudWidget::GetDefaultSize() const
@@ -414,6 +403,11 @@ FUCK::WindowFlags DemoOverlay::GetFlags() const
 	return flags;
 }
 
+ImVec2 DemoOverlay::GetDefaultSize() const
+{
+	return FUCK::UIScale(_baseSize);
+}
+
 ImVec2 DemoOverlay::GetDefaultPos() const
 {
 	ImVec2 displaySize = FUCK::GetDisplaySize();
@@ -425,11 +419,6 @@ ImVec2 DemoOverlay::GetDefaultPos() const
 		displaySize.x - scaledSize.x - offset,
 		FUCK::Scale(100.0f)
 	};
-}
-
-ImVec2 DemoOverlay::GetDefaultSize() const
-{
-	return FUCK::Scale(_baseSize);
 }
 
 void DemoOverlay::Draw()

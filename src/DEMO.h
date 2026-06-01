@@ -24,7 +24,6 @@ public:
 
 	ImVec2 GetDefaultPos() const override;
 	ImVec2 GetDefaultSize() const override;
-	bool   GetRequestedPos(ImVec2& outPos) override;
 
 	bool     _isOpen       = false;
 	IWindow* _parentWindow = nullptr;
@@ -45,11 +44,7 @@ public:
 
 	FUCK::WindowFlags GetFlags() const override;
 
-	ImVec2 GetDefaultPos() const override
-	{
-		return FUCK::Scale(100.0f, 100.0f);
-	}
-
+	ImVec2 GetDefaultPos() const override;
 	ImVec2 GetDefaultSize() const override;
 
 	bool _isOpen       = false;
@@ -107,26 +102,22 @@ public:
 		char         inputBuffer[256] = { 0 };
 
 		// Overlays
-		ImVec2 overlayPos{ -1.0f, -1.0f };
-		ImVec2 overlaySize{ -1.0f, -1.0f };
-		bool   reqBlur         = false;
-		bool   reqHideHUD      = false;
-		bool   reqPauseHard    = false;
-		bool   reqPauseSoft    = false;
-		bool   reqCloseOnEsc   = false;
-		bool   reqCloseOnMenu  = false;
-		bool   reqPassInput    = false;
-		bool   reqBlockVanity  = false;
-		bool   reqNoBackground = false;
-		bool   reqNoDecoration = false;
-		bool   reqExtendBorder = false;
+		bool reqBlur         = false;
+		bool reqHideHUD      = false;
+		bool reqPauseHard    = false;
+		bool reqPauseSoft    = false;
+		bool reqCloseOnEsc   = false;
+		bool reqCloseOnMenu  = false;
+		bool reqPassInput    = false;
+		bool reqBlockVanity  = false;
+		bool reqNoBackground = false;
+		bool reqNoDecoration = false;
+		bool reqExtendBorder = false;
 
-		ImVec2 secondOverlayPos{ 800.0f, 400.0f };
-		bool   secondPassInput = false;
+		bool secondPassInput = false;
+		bool hudKeepOpen     = false;
 
-		ImVec2 hudWidgetPos{ -1.0f, -1.0f };
-		bool   hudKeepOpen = false;
-		float  hudScale    = 1.0f;
+		float hudScale = 1.0f;
 
 		// Rendering Overlays Demo
 		bool                 showOverlay      = false;
