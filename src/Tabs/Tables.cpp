@@ -164,17 +164,27 @@ void DemoState::DrawTablesTab()
 
 		for (const auto& row : _formRows) {
 			FUCK::TableNextRow();
+
 			FUCK::TableNextColumn();
+			FUCK::AlignTextToFramePadding();
 			FUCK::Text("%08X", row.id);
+
 			FUCK::TableNextColumn();
+			FUCK::AlignTextToFramePadding();
 			FUCK::Text("%s", row.name.empty() ? row.editorID.c_str() : row.name.c_str());
 			if (!row.editorID.empty() && !row.name.empty())
 				FUCK::SetTooltip(row.editorID.c_str());
+
 			FUCK::TableNextColumn();
+			FUCK::AlignTextToFramePadding();
 			FUCK::Text("%s", row.typeStr.c_str());
+
 			FUCK::TableNextColumn();
+			FUCK::AlignTextToFramePadding();
 			FUCK::Text("%.1f", row.weight);
+
 			FUCK::TableNextColumn();
+			FUCK::AlignTextToFramePadding();
 			FUCK::Text("%d", row.value);
 		}
 		FUCK::EndTable();
