@@ -442,7 +442,6 @@ void DemoOverlay::Draw()
 	FUCK::Header("$DEMO_Section_WindowMetrics"_T);
 	FUCK::Text("$DEMO_MetricSize"_T, curSize.x, curSize.y);
 	FUCK::Text("$DEMO_MetricPos"_T, curPos.x, curPos.y);
-	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_WindowFlags"_T);
 	FUCK::Text("$DEMO_WindowFlags_Desc"_T);
@@ -485,7 +484,6 @@ void DemoOverlay::Draw()
 		DemoState::GetSingleton()->SaveSettings();
 
 	FUCK::SeparatorThick();
-	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_OverlayControls"_T);
 	auto state = DemoState::GetSingleton();

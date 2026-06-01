@@ -10,8 +10,6 @@ void DemoState::DrawBasicWidgetsTab()
 	FUCK::Button("$DEMO_HostButton"_T);
 	FUCK::SetTooltip("$DEMO_ButtonTip"_T);
 
-	FUCK::Spacing();
-
 	FUCK::Header("$DEMO_Section_IconButtons"_T);
 
 	ImVec2      iconSize;
@@ -34,8 +32,6 @@ void DemoState::DrawBasicWidgetsTab()
 	} else {
 		FUCK::TextDisabled("$DEMO_NoIconTexture"_T);
 	}
-
-	FUCK::Spacing();
 
 	// Checkboxes
 	FUCK::Header("$DEMO_Section_Checkboxes"_T);
@@ -68,8 +64,6 @@ void DemoState::DrawBasicWidgetsTab()
 	}
 	FUCK::PopID();
 
-	FUCK::Spacing();
-
 	// Toggle Buttons
 	FUCK::Header("$DEMO_Section_ToggleSwitches"_T);
 	FUCK::TextDisabled("$DEMO_Header_Far"_T);
@@ -89,8 +83,6 @@ void DemoState::DrawBasicWidgetsTab()
 	if (changed)
 		DemoState::GetSingleton()->SaveSettings();
 
-	FUCK::Spacing();
-
 	FUCK::Header("$DEMO_Section_Sliders"_T);
 	FUCK::TextWrapped("$DEMO_SliderDesc"_T);
 	FUCK::Spacing();
@@ -102,15 +94,11 @@ void DemoState::DrawBasicWidgetsTab()
 	if (FUCK::IsItemDeactivatedAfterEdit())
 		DemoState::GetSingleton()->SaveSettings();
 
-	FUCK::Spacing();
-
 	FUCK::Header("$DEMO_Section_TextInput"_T);
 	FUCK::SetNextItemWidth(-1);
 	FUCK::InputText("$DEMO_InputField"_T, _cfg.inputBuffer, sizeof(_cfg.inputBuffer));
 	if (FUCK::IsItemDeactivatedAfterEdit())
 		DemoState::GetSingleton()->SaveSettings();
-
-	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_TextDisplay"_T);
 	FUCK::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "$DEMO_ColoredText"_T);

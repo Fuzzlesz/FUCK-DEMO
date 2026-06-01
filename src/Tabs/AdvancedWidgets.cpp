@@ -26,8 +26,6 @@ void DemoState::DrawAdvancedWidgetsTab()
 	FUCK::SetNextItemWidth(-1);
 	FUCK::ComboWithFilter("$DEMO_FilteredCombo"_T, &filterComboItem, filterItems, 8, 5);
 
-	FUCK::Spacing();
-
 	FUCK::Header("$DEMO_Section_FormCombo"_T);
 
 	static std::uint8_t formType      = 0;
@@ -90,8 +88,6 @@ void DemoState::DrawAdvancedWidgetsTab()
 
 	FUCK::Header("$DEMO_Section_Stepper"_T);
 	FUCK::EnumStepper("$DEMO_StepperDifficulty"_T, &_stepperValue, _stepperOptions);
-
-	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_CollapsingHeaders"_T);
 	if (FUCK::CollapsingHeader("$DEMO_CollapsingHeader"_T)) {

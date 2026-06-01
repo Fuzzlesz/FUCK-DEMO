@@ -14,7 +14,6 @@ void DemoState::DrawGameControlTab()
 
 	FUCK::Spacing();
 	FUCK::Separator();
-	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_HUDWidget"_T);
 	auto& hudWidget = DemoState::GetSingleton()->_hudWidget;
@@ -43,7 +42,6 @@ void DemoState::DrawGameControlTab()
 
 	FUCK::Spacing();
 	FUCK::Separator();
-	FUCK::Spacing();
 
 	FUCK::Header("$DEMO_Section_Utils"_T);
 

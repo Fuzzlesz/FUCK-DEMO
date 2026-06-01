@@ -32,8 +32,6 @@ void DemoState::DrawInputIOTab()
 	FUCK::Text("$DEMO_ModCtrl"_T, FUCK::IsModifierPressed(FUCK::Modifier::kCtrl) ? "YES" : "NO");
 	FUCK::Text("$DEMO_ModAlt"_T, FUCK::IsModifierPressed(FUCK::Modifier::kAlt) ? "YES" : "NO");
 
-	FUCK::Spacing();
-
 	FUCK::Header("$DEMO_Section_KeyInput"_T);
 	FUCK::SliderInt("$DEMO_TestKeyID"_T, &_keyTestIndex, 0, 200);
 	FUCK::Text("$DEMO_KeyName"_T, FUCK::GetKeyName(_keyTestIndex));
