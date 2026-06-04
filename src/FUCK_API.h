@@ -1756,7 +1756,7 @@ namespace FUCK
 		}
 
 		ImVec2 anchor      = customAnchor ? *customAnchor : ImVec2(min.x + (max.x - min.x) * 0.5f, min.y + (max.y - min.y) * 0.5f);
-		float  crossSize   = 10.0f;
+		float  crossSize   = Scale(10.0f);
 		ImU32  anchorColor = IM_COL32(255, 0, 0, 204);
 
 		if (screenSpace) {
@@ -1800,11 +1800,11 @@ namespace FUCK
 		return Combo(label, current_item, ptrs.data(), static_cast<int>(ptrs.size()));
 	}
 
-	inline bool ComboWithFilter(const char* label, int* current_item, const std::vector<std::string>& items, int popup_max_height_in_items = -1)
+	inline bool ComboWithFilter(const char* label, int* current_item, std::span<const std::string> items, int popup_max_height_in_items = -1)
 	{
 		std::vector<const char*> ptrs(items.size());
 		for (size_t i = 0; i < items.size(); ++i) ptrs[i] = items[i].c_str();
-		return ComboWithFilter(label, current_item, ptrs.data(), static_cast<int>(ptrs.size()), popup_max_height_in_items);
+		return GetInterface() ? GetInterface()->ComboWithFilter(label, current_item, ptrs.data(), static_cast<int>(ptrs.size()), popup_max_height_in_items) : false;
 	}
 
 	inline bool InputText(const char* label, std::string* str, int flags = 0)
