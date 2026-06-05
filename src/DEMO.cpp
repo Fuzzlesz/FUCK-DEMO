@@ -10,9 +10,6 @@ DemoState::DemoState()
 	_overlay._secondWindow       = &_secondOverlay;
 	_secondOverlay._parentWindow = &_overlay;
 
-	// Pre-load the image so the window creation instantly knows the correct bounds
-	_hudWidget._hudImage = FUCK::Image("Data/Interface/test.png", false);
-
 	// Register Overlays
 	FUCK::RegisterWindow(&_overlay);
 	FUCK::RegisterWindow(&_secondOverlay);
@@ -339,8 +336,10 @@ void HudWidget::Draw()
 	bool  isInteractable = FUCK::IsMenuOpen();
 	auto& cfg            = DemoState::GetSingleton()->_cfg;
 
-	if (!_hudImage.IsLoaded()) {
-		_hudImage = FUCK::Image("Data/Interface/test.png", false);
+	if (!_hudImage.IsLoaded() && !_hasTriedLoad) {
+		std::string imagePath = GetSettings().GetConfigDirectory() + _imageFilename;
+		_hudImage             = FUCK::Image(imagePath.c_str(), false);
+		_hasTriedLoad         = true;
 	}
 
 	if (_hudImage.IsLoaded()) {

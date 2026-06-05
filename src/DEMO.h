@@ -50,6 +50,9 @@ public:
 	bool _isOpen       = false;
 	bool _wantOpen     = false;
 	bool _hasLoadedPos = false;
+	bool _hasTriedLoad = false;
+
+	const std::string _imageFilename = "test.png";
 
 	FUCK::Image _hudImage;
 };
@@ -216,7 +219,9 @@ private:
 	bool _renderSuspended = false;
 
 	FUCK::Image _loadedImage;
-	char        _ImagePath[256] = "Data/Interface/test.png";
+	char        _ImagePath[256] = { 0 };
+
+	const std::string _defaultDemoImage = "test2.png";
 
 	// Input Capture Demo
 	int           _keyTestIndex   = 1;

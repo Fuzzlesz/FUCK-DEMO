@@ -6,6 +6,11 @@ void DemoState::DrawRenderingTab()
 		return;
 	}
 
+	if (_ImagePath[0] == '\0') {
+		std::string demoImagePath = GetSettings().GetConfigDirectory() + _defaultDemoImage;
+		FUCK::StringCopy(_ImagePath, demoImagePath);
+	}
+
 	FUCK::Header("$DEMO_Section_ImageLoading"_T);
 	FUCK::SetNextItemWidth(-1);
 	FUCK::InputText("$DEMO_ImagePath"_T, _ImagePath, sizeof(_ImagePath));
