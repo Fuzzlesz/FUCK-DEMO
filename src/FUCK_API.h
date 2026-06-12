@@ -469,6 +469,7 @@ struct FUCK_Interface
 	bool (*Combo)(const char*, int*, const char* const*, int);
 	bool (*ComboWithFilter)(const char*, int*, const char* const*, int, int);
 	bool (*ComboForm)(const char*, std::uint32_t*, std::uint8_t);
+	bool (*ComboFormStr)(const char*, char*, size_t, std::uint8_t);
 	bool (*Selectable)(const char*, bool, int, const ImVec2&);
 	ImGuiTableSortSpecs* (*GetTableSortSpecs)();
 	void (*Header)(const char*);
@@ -1027,6 +1028,19 @@ namespace FUCK
 	inline bool Combo(const char* label, int* current_item, const char* const* items, int items_count) { return GetInterface() ? GetInterface()->Combo(label, current_item, items, items_count) : false; }
 	inline bool ComboWithFilter(const char* label, int* current_item, const char* const* items, int items_count, int popup_max_height_in_items = -1) { return GetInterface() ? GetInterface()->ComboWithFilter(label, current_item, items, items_count, popup_max_height_in_items) : false; }
 	inline bool ComboForm(const char* label, std::uint32_t* currentFormID, std::uint8_t formType) { return GetInterface() ? GetInterface()->ComboForm(label, currentFormID, formType) : false; }
+	inline bool ComboForm(const char* label, std::string* currentEdid, std::uint8_t formType)
+	{
+		if (!currentEdid || !GetInterface())
+			return false;
+		char buf[256];
+		strncpy_s(buf, sizeof(buf), currentEdid->c_str(), _TRUNCATE);
+		if (GetInterface()->ComboFormStr(label, buf, sizeof(buf), formType)) {
+			*currentEdid = buf;
+			return true;
+		}
+		return false;
+	}
+
 	inline bool Selectable(const char* label, bool selected = false, int flags = 0, const ImVec2& size = ImVec2(0, 0)) { return GetInterface() ? GetInterface()->Selectable(label, selected, flags, size) : false; }
 
 	inline ImGuiTableSortSpecs* GetTableSortSpecs() { return GetInterface() ? GetInterface()->GetTableSortSpecs() : nullptr; }
@@ -1440,7 +1454,7 @@ namespace FUCK
 	// [ SECTION 4 ] SMART WRAPPERS & UTILITIES
 	// ==================================================
 
-	/// @brief Safe Resource-Acquisition-Is-Initialization wrapper for custom Images.
+	/// @brief RAII wrapper for custom images.
 	class Image
 	{
 	public:
@@ -1575,7 +1589,7 @@ namespace FUCK
 		const char* _pluginName;
 	};
 
-	/// @brief Safe string copy utility preventing buffer overruns.
+	/// @brief String copy utility.
 	template <size_t N>
 	inline void StringCopy(char (&dest)[N], const char* source)
 	{
@@ -1592,7 +1606,7 @@ namespace FUCK
 		strncpy_s(dest, N, source.c_str(), _TRUNCATE);
 	}
 
-	/// @brief Helper functions for delta saving/loading INI values with automatic default value handling.
+	/// @brief Delta save/load INI values.
 	namespace INI
 	{
 		inline bool LoadBool(const CSimpleIniA& ini, const char* sec, const char* key, bool defVal)
@@ -1605,7 +1619,7 @@ namespace FUCK
 			return static_cast<float>(ini.GetDoubleValue(sec, key, static_cast<double>(defVal)));
 		}
 
-		/// Automatically handles mixed ints
+		// Handles mixed ints
 		template <typename T>
 		inline T LoadInt(const CSimpleIniA& ini, const char* sec, const char* key, T defVal)
 		{
@@ -1621,7 +1635,7 @@ namespace FUCK
 				ini.SetBoolValue(sec, key, val);
 		}
 
-		/// Automatically handles mixed ints
+		// Handles mixed ints
 		template <typename T, typename U>
 		inline void SaveInt(CSimpleIniA& ini, const char* sec, const char* key, T val, U defVal)
 		{
@@ -1738,7 +1752,7 @@ namespace FUCK
 	// Overloads & Templates
 	// --------------------------------------------------
 
-	/// @brief Standardized visual for UI widget editing. Handles both Screen-Space and Window-Space rendering.
+	/// @brief Visual for UI widget editing. Handles Screen-Space and Window-Space.
 	inline void DrawEditorBounds(const ImVec2& min, const ImVec2& max, EditorBoundsState state = EditorBoundsState::kNormal, float thickness = 2.0f, bool screenSpace = false, const ImVec2* customAnchor = nullptr)
 	{
 		ImU32 boundsColor;
@@ -1779,7 +1793,7 @@ namespace FUCK
 		}
 	}
 
-	/// @brief Helper for handling WASD Key widget nudging. Returns true if movement occurred, outputting the delta.
+	/// @brief WASD key widget nudging.
 	inline bool WASDNudge(float& outDeltaX, float& outDeltaY, bool isActiveOrHovered, float step = 1.0f, float sprintMult = 10.0f)
 	{
 		if (!isActiveOrHovered || IsMouseDown(0))
