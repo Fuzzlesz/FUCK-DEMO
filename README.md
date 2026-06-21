@@ -20,8 +20,8 @@ https://www.nexusmods.com/skyrimspecialedition/mods/181603
 
 ## Building
 ```
-git clone https://github.com/Fuzzlesz/EditHUD-SKSE.git
-cd EditHUD-SKSE
+git clone https://github.com/Fuzzlesz/FUCK-DEMO.git
+cd FUCK-DEMO
 # pull commonlib /extern to override the path settings
 git submodule init
 # to update submodules to checked in build

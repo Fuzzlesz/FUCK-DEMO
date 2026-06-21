@@ -1,9 +1,6 @@
 {
   "name": "fuck-demo",
   "version-string": "1.0.0",
-  "description": "",
-  "homepage": "",
-  "license": "MIT",
   "dependencies": [
     "clib-util",
     "directxtex",
