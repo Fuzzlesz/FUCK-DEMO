@@ -15,7 +15,10 @@ DemoState::DemoState()
 	FUCK::RegisterWindow(&_secondOverlay);
 	FUCK::RegisterWindow(&_hudWidget);
 
-	// Register Split Tools
+	// Setup HUD widget assets and hooks
+	_hudWidget.Initialize();
+
+		// Register Split Tools
 	FUCK::RegisterTool(&_toolGeneral);
 	FUCK::RegisterTool(&_toolVisuals);
 	FUCK::RegisterTool(&_toolSystem);
@@ -300,6 +303,18 @@ void SimpleOverlay::Draw()
 // HUD Widget Implementation
 // ==================================================
 
+void HudWidget::Initialize()
+{
+	std::string imagePath = GetSettings().GetConfigDirectory() + _imageFilename;
+	_hudImage             = FUCK::Image(imagePath.c_str(), false);
+
+	_menuListener = FUCK::MenuEventListener([this](const char* menuName, bool opening) {
+		if (menuName == RE::HUDMenu::MENU_NAME) {
+			_hudMenuOpen = opening;
+		}
+	});
+}
+
 FUCK::WindowFlags HudWidget::GetFlags() const
 {
 	FUCK::WindowFlags flags = FUCK::WindowFlags::kNoDecoration |
@@ -323,9 +338,9 @@ ImVec2 HudWidget::GetDefaultPos() const
 
 ImVec2 HudWidget::GetDefaultSize() const
 {
-	if (const_cast<HudWidget*>(this)->_hudImage.IsLoaded()) {
+	if (_hudImage.IsLoaded()) {
 		ImVec2 imageSize = FUCK::Scale(ImVec2(_hudImage.GetWidth() * DemoState::GetSingleton()->_cfg.hudScale, _hudImage.GetHeight() * DemoState::GetSingleton()->_cfg.hudScale));
-		float  padding   = FUCK::Scale(12.0f);
+		float  padding   = FUCK::Scale(15.0f);
 		return { imageSize.x + (padding * 2.0f), imageSize.y + (padding * 2.0f) };
 	}
 	return FUCK::Scale(100.0f, 100.0f);
@@ -336,33 +351,37 @@ void HudWidget::Draw()
 	bool  isInteractable = FUCK::IsMenuOpen();
 	auto& cfg            = DemoState::GetSingleton()->_cfg;
 
-	if (!_hudImage.IsLoaded() && !_hasTriedLoad) {
-		std::string imagePath = GetSettings().GetConfigDirectory() + _imageFilename;
-		_hudImage             = FUCK::Image(imagePath.c_str(), false);
-		_hasTriedLoad         = true;
+	if (!_hudMenuOpen && !cfg.hudKeepOpen && !isInteractable) {
+		return;
 	}
 
 	if (_hudImage.IsLoaded()) {
 		ImVec2 imageSize = FUCK::Scale(ImVec2(_hudImage.GetWidth() * cfg.hudScale, _hudImage.GetHeight() * cfg.hudScale));
-		float  padding   = FUCK::Scale(12.0f);
-		FUCK::SetCursorPos({ padding, padding });
+		float  padding   = FUCK::Scale(15.0f);
 
-		ImVec2 pMin = FUCK::GetCursorScreenPos();
+		FUCK::SetCursorPos({ 0, 0 });
+		FUCK::Dummy({ imageSize.x + padding * 2.0f, imageSize.y + padding * 2.0f });
+
+		ImVec2 winPos  = FUCK::GetWindowPos();
+		ImVec2 winSize = FUCK::GetWindowSize();
+
+		ImVec2 pMin = { winPos.x + padding, winPos.y + padding };
 		ImVec2 pMax = { pMin.x + imageSize.x, pMin.y + imageSize.y };
 
-		FUCK::DrawImage(_hudImage.GetID(), imageSize);
+		FUCK::AddImage(_hudImage.GetID(), pMin, pMax);
 
 		if (isInteractable) {
 			bool isHovered = FUCK::IsWindowHovered(0);
 
-			float gap = FUCK::Scale(4.0f);
-			pMin.x -= gap;
-			pMin.y -= gap;
-			pMax.x += gap;
-			pMax.y += gap;
+			float strokeThickness = FUCK::Scale(4.0f);
+			float halfStroke      = strokeThickness * 0.5f;
+
+			ImVec2 bMin = winPos + ImVec2(halfStroke, halfStroke);
+			ImVec2 bMax = winPos + winSize - ImVec2(halfStroke, halfStroke);
 
 			FUCK::EditorBoundsState state = isHovered ? FUCK::EditorBoundsState::kHovered : FUCK::EditorBoundsState::kNormal;
-			FUCK::DrawEditorBounds(pMin, pMax, state, 2.0f);
+
+			FUCK::DrawEditorBounds(bMin, bMax, state, strokeThickness);
 		}
 	} else {
 		FUCK::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "$DEMO_ImageMissing"_T);

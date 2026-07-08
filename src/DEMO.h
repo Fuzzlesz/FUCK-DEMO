@@ -38,23 +38,26 @@ class HudWidget : public FUCK::IWindow
 public:
 	const char* Id() const override { return "HudWidget"; }
 	const char* Title() const override { return "$DEMO_HudWidgetTitle"_T; }
-	void        Draw() override;
-	bool        IsOpen() const override { return _isOpen; }
-	void        SetOpen(bool a_open) override { _isOpen = a_open; }
+
+	void Initialize();
+
+	void Draw() override;
+	bool IsOpen() const override { return _isOpen; }
+	void SetOpen(bool a_open) override { _isOpen = a_open; }
 
 	FUCK::WindowFlags GetFlags() const override;
 
 	ImVec2 GetDefaultPos() const override;
 	ImVec2 GetDefaultSize() const override;
 
-	bool _isOpen       = false;
-	bool _wantOpen     = false;
-	bool _hasLoadedPos = false;
-	bool _hasTriedLoad = false;
+	bool _isOpen      = false;
+	bool _wantOpen    = false;
+	bool _hudMenuOpen = false;
 
 	const std::string _imageFilename = "test.png";
 
-	FUCK::Image _hudImage;
+	FUCK::Image             _hudImage;
+	FUCK::MenuEventListener _menuListener;
 };
 
 // ==================================================
