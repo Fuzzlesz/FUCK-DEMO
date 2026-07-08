@@ -9,5 +9,7 @@ set(sources ${sources}
 	src/Tabs/LayoutStyle.cpp
 	src/Tabs/Rendering.cpp
 	src/Tabs/Tables.cpp
+	src/Tabs/Version2.cpp
+	src/Tabs/Version3.cpp
 	src/main.cpp
 )

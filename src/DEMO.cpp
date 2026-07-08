@@ -22,6 +22,7 @@ DemoState::DemoState()
 	FUCK::RegisterTool(&_toolGeneral);
 	FUCK::RegisterTool(&_toolVisuals);
 	FUCK::RegisterTool(&_toolSystem);
+	FUCK::RegisterTool(&_toolAPIUpdates);
 
 	LoadSettings();
 }
@@ -59,6 +60,15 @@ void DemoState::ToolSystem::Draw()
 	}
 }
 
+void DemoState::ToolAPIUpdates::Draw()
+{
+	if (FUCK::BeginTabBar("APIUpdatesTabs")) {
+		DemoState::GetSingleton()->DrawVers2Tab();
+		DemoState::GetSingleton()->DrawVers3Tab();
+		FUCK::EndTabBar();
+	}
+}
+
 // ==================================================
 // Demo State Core
 // ==================================================
@@ -87,6 +97,12 @@ void DemoState::OnOpen()
 void DemoState::OnClose()
 {
 	logger::info("Demo Tool Closed");
+
+	// Ensure the hotkey is always released when the FUCK menu closes
+	if (_disableHotkey) {
+		_disableHotkey = false;
+		FUCK::SetHotkeyEnabled(true);
+	}
 }
 
 bool DemoState::OnAsyncInput(const void* inputEvent)

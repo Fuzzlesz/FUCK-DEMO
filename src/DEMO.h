@@ -163,13 +163,12 @@ public:
 
 	DemoOverlay* GetOverlay() { return &_overlay; }
 
-	// --- Sub-Tools ---
-	// 1. Basic Tool (Root Level)
+	// Basic Tool
 	class ToolGeneral : public FUCK::ITool
 	{
 	public:
 		const char* Name() const override { return "$DEMO_Tool_General"_T; }
-		const char* Group() const override { return nullptr; }  // Top level
+		const char* Group() const override { return "$DEMO_Group_General"_T; }  // Grouped
 		void        Draw() override;
 		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 		void        OnOpen() override { DemoState::GetSingleton()->OnOpen(); }
@@ -177,22 +176,32 @@ public:
 		bool        OnAsyncInput(const void* e) override { return DemoState::GetSingleton()->OnAsyncInput(e); }
 	};
 
-	// 2. Visuals Tool (Grouped)
+	// Visuals Tool
 	class ToolVisuals : public FUCK::ITool
 	{
 	public:
 		const char* Name() const override { return "$DEMO_Tool_Visuals"_T; }
-		const char* Group() const override { return "$DEMO_Group_Advanced"_T; }  // Grouped
+		const char* Group() const override { return "$DEMO_Group_General"_T; }  // Grouped
 		void        Draw() override;
 		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 	};
 
-	// 3. System Tool (Grouped)
+	// System Tool
 	class ToolSystem : public FUCK::ITool
 	{
 	public:
 		const char* Name() const override { return "$DEMO_Tool_System"_T; }
-		const char* Group() const override { return "$DEMO_Group_Advanced"_T; }  // Grouped
+		const char* Group() const override { return "$DEMO_Group_General"_T; } // Grouped
+		void        Draw() override;
+		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
+	};
+
+	// API Updates Tool
+	class ToolAPIUpdates : public FUCK::ITool
+	{
+	public:
+		const char* Name() const override { return "$DEMO_Tool_APIUpdates"_T; }
+		const char* Group() const override { return nullptr; }  // Top level
 		void        Draw() override;
 		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 	};
@@ -214,12 +223,16 @@ private:
 	void DrawTablesTab();
 	void DrawGameControlTab();
 	void DrawIconsTab();
+	void DrawVers2Tab();
+	void DrawVers3Tab();
 
 	// Feature Demos
-	int  _iconBtnClicks   = 0;
-	bool _useChildWindow  = false;
-	bool _showSpinner     = false;
-	bool _renderSuspended = false;
+	std::string _multilineBuffer = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5";
+	bool        _disableHotkey   = false;
+	int         _iconBtnClicks   = 0;
+	bool        _useChildWindow  = false;
+	bool        _showSpinner     = false;
+	bool        _renderSuspended = false;
 
 	FUCK::Image _loadedImage;
 	char        _ImagePath[256] = { 0 };
@@ -263,7 +276,8 @@ private:
 	HudWidget     _hudWidget;
 
 	// Tool Instances
-	ToolGeneral _toolGeneral;
-	ToolVisuals _toolVisuals;
-	ToolSystem  _toolSystem;
+	ToolGeneral    _toolGeneral;
+	ToolVisuals    _toolVisuals;
+	ToolSystem     _toolSystem;
+	ToolAPIUpdates _toolAPIUpdates;
 };
