@@ -1,6 +1,6 @@
 {
   "name": "fuck-demo",
-  "version-string": "1.0.0",
+  "version-string": "1.2.0",
   "dependencies": [
     "clib-util",
     "directxtex",
