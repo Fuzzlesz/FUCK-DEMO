@@ -62,5 +62,6 @@ using StringMap = ankerl::unordered_dense::map<std::string, D, string_hash, std:
 #	define OFFSET(se, ae) se
 #endif
 
-#include "FUCK_API.h"
+#define FUCK_API_ENABLE_SIMPLEINI
+#include "API/FUCK_API.h"
 #include "Version.h"
