@@ -42,7 +42,7 @@ void DemoState::DrawVers2Tab()
 
 	FUCK::Button("$DEMO_HoverMe"_T);
 	if (FUCK::IsItemHovered() && FUCK::BeginTooltip()) {
-		FUCK::TextColored(ImVec4(1.0f, 0.85f, 0.2f, 1.0f), "$DEMO_TooltipText"_T);
+		FUCK::TextColoredWrapped(ImVec4(1.0f, 0.85f, 0.2f, 1.0f), "$DEMO_TooltipText"_T);
 		FUCK::Spacing();
 		FUCK::Spinner("##tpspin", 12.0f, 3.0f, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 		FUCK::EndTooltip();
