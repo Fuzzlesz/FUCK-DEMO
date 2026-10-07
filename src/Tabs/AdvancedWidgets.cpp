@@ -18,13 +18,14 @@ void DemoState::DrawAdvancedWidgetsTab()
 
 	static int  filterComboItem = 0;
 	const char* filterItems[]   = {
+        "##HEADER: Fruits",
         "$DEMO_Fruit_Apple"_T, "$DEMO_Fruit_Banana"_T,
         "$DEMO_Fruit_Cherry"_T, "$DEMO_Fruit_Date"_T,
         "$DEMO_Fruit_Elderberry"_T, "$DEMO_Fruit_Fig"_T,
         "$DEMO_Fruit_Grape"_T, "$DEMO_Fruit_Honeydew"_T
 	};
 	FUCK::SetNextItemWidth(-1);
-	FUCK::ComboWithFilter("$DEMO_FilteredCombo"_T, &filterComboItem, filterItems, 8, 5);
+	FUCK::ComboWithFilter("$DEMO_FilteredCombo"_T, &filterComboItem, filterItems, 9, 5);
 
 	FUCK::Header("$DEMO_Section_FormCombo"_T);
 
