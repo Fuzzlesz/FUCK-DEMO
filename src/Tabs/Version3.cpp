@@ -7,11 +7,20 @@ void DemoState::DrawVers3Tab()
 	}
 
 	FUCK::Header("$DEMO_HotkeyAPI"_T);
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
-	if (FUCK::Checkbox("$DEMO_DisableHotkey"_T, &_disableHotkey, false, false)) {
-		// Communicate the state to the Host framework
-		FUCK::SetHotkeyEnabled(!_disableHotkey);
+	bool hotkeyEnabled = FUCK::IsHotkeyEnabled();
+	if (_disableHotkey && hotkeyEnabled)
+		_disableHotkey = false;  // another plugin turned it back on
+
+	// Leave it alone if another plugin turned it off, so the demo never undoes their choice
+	bool otherDisabled = !hotkeyEnabled && !_disableHotkey;
+	bool checked       = !hotkeyEnabled;
+
+	FUCK::BeginDisabled(otherDisabled);
+	if (FUCK::Checkbox("$DEMO_DisableHotkey"_T, &checked, false, false)) {
+		_disableHotkey = checked;
+		FUCK::SetHotkeyEnabled(!checked);
 	}
+	FUCK::EndDisabled();
 	FUCK::SetTooltip("$DEMO_DisableHotkeyTT"_T);
 
 	FUCK::Separator();
