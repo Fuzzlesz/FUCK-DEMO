@@ -18,11 +18,17 @@ DemoState::DemoState()
 	// Setup HUD widget assets and hooks
 	_hudWidget.Initialize();
 
-	// Register Split Tools
+	// Register Split Tools. Inside a group they show in the order they're registered, and a nested group sits where
+	// its first tool is. So API Updates, whose pages come last, sits below General, Visuals and System, and
+	// Version 2/3 sits above Version 4/5/6. See "Sidebar Tools & Groups" in DEMO.h
 	FUCK::RegisterTool(&_toolGeneral);
 	FUCK::RegisterTool(&_toolVisuals);
 	FUCK::RegisterTool(&_toolSystem);
-	FUCK::RegisterTool(&_toolAPIUpdates);
+	FUCK::RegisterTool(&_toolAPIv2);
+	FUCK::RegisterTool(&_toolAPIv3);
+	FUCK::RegisterTool(&_toolAPIv4);
+	FUCK::RegisterTool(&_toolAPIv5);
+	FUCK::RegisterTool(&_toolAPIv6);
 
 	LoadSettings();
 }
@@ -56,16 +62,6 @@ void DemoState::ToolSystem::Draw()
 		DemoState::GetSingleton()->DrawInputIOTab();
 		DemoState::GetSingleton()->DrawTablesTab();
 		DemoState::GetSingleton()->DrawGameControlTab();
-		FUCK::EndTabBar();
-	}
-}
-
-void DemoState::ToolAPIUpdates::Draw()
-{
-	if (FUCK::BeginTabBar("APIUpdatesTabs")) {
-		DemoState::GetSingleton()->DrawVers2Tab();
-		DemoState::GetSingleton()->DrawVers3Tab();
-		DemoState::GetSingleton()->DrawVers456Tab();
 		FUCK::EndTabBar();
 	}
 }
@@ -152,32 +148,7 @@ void DemoState::LoadSettings()
 
 		const char* inputBuf = ini.GetValue("Widgets", "InputBuffer", nullptr);
 		if (inputBuf)
-			FUCK::StringCopy(_cfg.inputBuffer, inputBuf); 
-
-		_cfg.reqBlur            = FUCK::INI::LoadBool(ini, "OverlayFlags", "Blur",            _def.reqBlur);
-		_cfg.reqHideHUD         = FUCK::INI::LoadBool(ini, "OverlayFlags", "HideHUD",         _def.reqHideHUD);
-		_cfg.reqPauseHard       = FUCK::INI::LoadBool(ini, "OverlayFlags", "PauseHard",       _def.reqPauseHard);
-		_cfg.reqPauseSoft       = FUCK::INI::LoadBool(ini, "OverlayFlags", "PauseSoft",       _def.reqPauseSoft);
-		_cfg.reqCloseOnEsc      = FUCK::INI::LoadBool(ini, "OverlayFlags", "CloseOnEsc",      _def.reqCloseOnEsc);
-		_cfg.reqCloseOnMenu     = FUCK::INI::LoadBool(ini, "OverlayFlags", "CloseOnMenu",     _def.reqCloseOnMenu);
-		_cfg.reqPassInput       = FUCK::INI::LoadBool(ini, "OverlayFlags", "PassInput",       _def.reqPassInput);
-		_cfg.reqBlockVanity     = FUCK::INI::LoadBool(ini, "OverlayFlags", "BlockVanity",     _def.reqBlockVanity);
-		_cfg.reqNoBackground    = FUCK::INI::LoadBool(ini, "OverlayFlags", "NoBackground",    _def.reqNoBackground);
-		_cfg.reqNoDecoration    = FUCK::INI::LoadBool(ini, "OverlayFlags", "NoDecoration",    _def.reqNoDecoration);
-		_cfg.reqExtendBorder    = FUCK::INI::LoadBool(ini, "OverlayFlags", "ExtendBorder",    _def.reqExtendBorder);
-		_cfg.reqRenderDuringTM  = FUCK::INI::LoadBool(ini, "OverlayFlags", "RenderDuringTM",  _def.reqRenderDuringTM);
-		_cfg.reqIgnoreUserScale = FUCK::INI::LoadBool(ini, "OverlayFlags", "IgnoreUserScale", _def.reqIgnoreUserScale);
-		_cfg.reqCustomPosition  = FUCK::INI::LoadBool(ini, "OverlayFlags", "CustomPosition",  _def.reqCustomPosition);
-		_cfg.reqCloseOnClickOut = FUCK::INI::LoadBool(ini, "OverlayFlags", "CloseOnClickOut", _def.reqCloseOnClickOut);
-		_cfg.reqEditable        = FUCK::INI::LoadBool(ini, "OverlayFlags", "Editable",        _def.reqEditable);
-		_cfg.reqScalable        = FUCK::INI::LoadBool(ini, "OverlayFlags", "Scalable",        _def.reqScalable);
-		_cfg.reqAnchorRight     = FUCK::INI::LoadBool(ini, "OverlayFlags", "AnchorRight",     _def.reqAnchorRight);
-		_cfg.reqRotatable       = FUCK::INI::LoadBool(ini, "OverlayFlags", "Rotatable",       _def.reqRotatable);
-
-		_cfg.secondPassInput  = FUCK::INI::LoadBool(ini, "SecondWindow", "PassInput", _def.secondPassInput);
-
-		_cfg.hudKeepOpen = FUCK::INI::LoadBool (ini, "HudWidget", "KeepOpen", _def.hudKeepOpen);
-		_cfg.hudScale    = FUCK::INI::LoadFloat(ini, "HudWidget", "Scale",    _def.hudScale);
+			FUCK::StringCopy(_cfg.inputBuffer, inputBuf);
 
 		_cfg.showOverlay      = FUCK::INI::LoadBool (ini, "Rendering", "ShowOverlay",      _def.showOverlay);
 		_cfg.overlayType      = FUCK::INI::LoadInt  (ini, "Rendering", "OverlayType",      _def.overlayType);
@@ -223,34 +194,6 @@ void DemoState::SaveSettings()
 		FUCK::INI::SaveDouble(ini, "Widgets", "DragFloat",   _cfg.dragFloat,   _def.dragFloat);
 		FUCK::INI::SaveInt   (ini, "Widgets", "DragInt",     _cfg.dragInt,     _def.dragInt);
 		FUCK::INI::SaveString(ini, "Widgets", "InputBuffer", _cfg.inputBuffer, _def.inputBuffer);
-
-		// Overlay Flags
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "Blur",            _cfg.reqBlur,            _def.reqBlur);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "HideHUD",         _cfg.reqHideHUD,         _def.reqHideHUD);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "PauseHard",       _cfg.reqPauseHard,       _def.reqPauseHard);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "PauseSoft",       _cfg.reqPauseSoft,       _def.reqPauseSoft);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "CloseOnEsc",      _cfg.reqCloseOnEsc,      _def.reqCloseOnEsc);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "CloseOnMenu",     _cfg.reqCloseOnMenu,     _def.reqCloseOnMenu);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "PassInput",       _cfg.reqPassInput,       _def.reqPassInput);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "BlockVanity",     _cfg.reqBlockVanity,     _def.reqBlockVanity);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "NoBackground",    _cfg.reqNoBackground,    _def.reqNoBackground);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "NoDecoration",    _cfg.reqNoDecoration,    _def.reqNoDecoration);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "ExtendBorder",    _cfg.reqExtendBorder,    _def.reqExtendBorder);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "RenderDuringTM",  _cfg.reqRenderDuringTM,  _def.reqRenderDuringTM);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "IgnoreUserScale", _cfg.reqIgnoreUserScale, _def.reqIgnoreUserScale);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "CustomPosition",  _cfg.reqCustomPosition,  _def.reqCustomPosition);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "CloseOnClickOut", _cfg.reqCloseOnClickOut, _def.reqCloseOnClickOut);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "Editable",        _cfg.reqEditable,        _def.reqEditable);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "Scalable",        _cfg.reqScalable,        _def.reqScalable);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "AnchorRight",     _cfg.reqAnchorRight,     _def.reqAnchorRight);
-		FUCK::INI::SaveBool(ini, "OverlayFlags", "Rotatable",       _cfg.reqRotatable,       _def.reqRotatable);
-
-		// Second Window
-		FUCK::INI::SaveBool     (ini, "SecondWindow", "PassInput", _cfg.secondPassInput, _def.secondPassInput);
-
-		// HUD Widget
-		FUCK::INI::SaveBool     (ini, "HudWidget", "KeepOpen", _cfg.hudKeepOpen, _def.hudKeepOpen);
-		FUCK::INI::SaveDouble   (ini, "HudWidget", "Scale",    _cfg.hudScale,    _def.hudScale);
 
 		// Rendering
 		FUCK::INI::SaveBool  (ini, "Rendering", "ShowOverlay",      _cfg.showOverlay,      _def.showOverlay);
@@ -308,7 +251,6 @@ ImVec2 SimpleOverlay::GetDefaultSize() const
 void SimpleOverlay::Draw()
 {
 	if (FUCK::Checkbox("$DEMO_Sec_PassInput"_T, &DemoState::GetSingleton()->_cfg.secondPassInput, false, false)) {
-		DemoState::GetSingleton()->SaveSettings();
 		if (DemoState::GetSingleton()->_cfg.secondPassInput) {
 			FUCK::SetMenuOpen(false);
 			if (_parentWindow) {
@@ -350,6 +292,8 @@ void HudWidget::Initialize()
 
 FUCK::WindowFlags HudWidget::GetFlags() const
 {
+	auto& cfg = DemoState::GetSingleton()->_cfg;
+
 	FUCK::WindowFlags flags = FUCK::WindowFlags::kNoDecoration  |
 	                          FUCK::WindowFlags::kNoBackground  |
 	                          FUCK::WindowFlags::kAutoResize    |
@@ -359,21 +303,36 @@ FUCK::WindowFlags HudWidget::GetFlags() const
 		flags = flags | FUCK::WindowFlags::kPassInputToGame;
 	}
 
-	if (!DemoState::GetSingleton()->_cfg.hudKeepOpen)
+	if (!cfg.hudKeepOpen)
 		flags = flags | FUCK::WindowFlags::kCloseOnGameMenu;
+
+	// The host moves and saves it while the FUCK menu is open. The other edit flags build on this one
+	flags = flags | FUCK::WindowFlags::kEditable;
+	if (cfg.hudScalable)
+		flags = flags | FUCK::WindowFlags::kScalable;
+	if (cfg.hudAnchorRight)
+		flags = flags | FUCK::WindowFlags::kAnchorRight;
+	if (cfg.hudRotatable)
+		flags = flags | FUCK::WindowFlags::kRotatable;
 
 	return flags;
 }
 
 ImVec2 HudWidget::GetDefaultPos() const
 {
-	return FUCK::Scale(100.0f, 100.0f);
+	ImVec2 pos = FUCK::Scale(100.0f, 100.0f);
+
+	// With kAnchorRight, the default position is the top-right corner
+	if (DemoState::GetSingleton()->_cfg.hudAnchorRight)
+		pos.x += GetDefaultSize().x;
+
+	return pos;
 }
 
 ImVec2 HudWidget::GetDefaultSize() const
 {
 	if (_hudImage.IsLoaded()) {
-		ImVec2 imageSize = FUCK::Scale(ImVec2(_hudImage.GetWidth() * DemoState::GetSingleton()->_cfg.hudScale, _hudImage.GetHeight() * DemoState::GetSingleton()->_cfg.hudScale));
+		ImVec2 imageSize = FUCK::Scale(ImVec2(_hudImage.GetWidth(), _hudImage.GetHeight()));
 		float  padding   = FUCK::Scale(15.0f);
 		return { imageSize.x + (padding * 2.0f), imageSize.y + (padding * 2.0f) };
 	}
@@ -390,33 +349,18 @@ void HudWidget::Draw()
 	}
 
 	if (_hudImage.IsLoaded()) {
-		ImVec2 imageSize = FUCK::Scale(ImVec2(_hudImage.GetWidth() * cfg.hudScale, _hudImage.GetHeight() * cfg.hudScale));
+		// The host's scale handles set GetWindowScale(), and the widget applies it. It's 1 without kScalable
+		float  scale     = FUCK::GetWindowScale();
+		ImVec2 imageSize = FUCK::Scale(ImVec2(_hudImage.GetWidth() * scale, _hudImage.GetHeight() * scale));
 		float  padding   = FUCK::Scale(15.0f);
 
-		FUCK::SetCursorPos({ 0, 0 });
+		// Reserves the space, so the auto-sized window fits the image
+		ImVec2 start = FUCK::GetCursorScreenPos();
 		FUCK::Dummy({ imageSize.x + padding * 2.0f, imageSize.y + padding * 2.0f });
 
-		ImVec2 winPos  = FUCK::GetWindowPos();
-		ImVec2 winSize = FUCK::GetWindowSize();
-
-		ImVec2 pMin = { winPos.x + padding, winPos.y + padding };
-		ImVec2 pMax = { pMin.x + imageSize.x, pMin.y + imageSize.y };
-
-		FUCK::AddImage(_hudImage.GetID(), pMin, pMax);
-
-		if (isInteractable) {
-			bool isHovered = FUCK::IsWindowHovered(0);
-
-			float strokeThickness = FUCK::Scale(4.0f);
-			float halfStroke      = strokeThickness * 0.5f;
-
-			ImVec2 bMin = winPos + ImVec2(halfStroke, halfStroke);
-			ImVec2 bMax = winPos + winSize - ImVec2(halfStroke, halfStroke);
-
-			FUCK::EditorBoundsState state = isHovered ? FUCK::EditorBoundsState::kHovered : FUCK::EditorBoundsState::kNormal;
-
-			FUCK::DrawEditorBounds(bMin, bMax, state, strokeThickness);
-		}
+		// The host's rotation handle sets GetWindowRotation(), which drawn content like images can follow. It's 0 without kRotatable
+		ImVec2 imagePos = { start.x + padding, start.y + padding };
+		FUCK::DrawImageRotated(_hudImage.GetID(), imagePos, imageSize, FUCK::GetWindowRotation());
 	} else {
 		FUCK::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "$DEMO_ImageMissing"_T);
 	}
@@ -460,14 +404,6 @@ FUCK::WindowFlags DemoOverlay::GetFlags() const
 		flags = flags | FUCK::WindowFlags::kCustomPosition;
 	if (cfg.reqCloseOnClickOut)
 		flags = flags | FUCK::WindowFlags::kCloseOnClickOutside;
-	if (cfg.reqEditable)
-		flags = flags | FUCK::WindowFlags::kEditable;
-	if (cfg.reqScalable)
-		flags = flags | FUCK::WindowFlags::kScalable;
-	if (cfg.reqAnchorRight)
-		flags = flags | FUCK::WindowFlags::kAnchorRight;
-	if (cfg.reqRotatable)
-		flags = flags | FUCK::WindowFlags::kRotatable;
 	return flags;
 }
 
@@ -493,6 +429,14 @@ void DemoOverlay::Draw()
 {
 	auto& cfg = DemoState::GetSingleton()->_cfg;
 
+	// kCustomPosition leaves the position to the plugin. While it's ticked, this pins the window to the centre of the screen
+	if (cfg.reqCustomPosition) {
+		ImVec2 size    = GetDefaultSize();
+		ImVec2 display = FUCK::GetDisplaySize();
+		FUCK::SetWindowSize(size);
+		FUCK::SetWindowPos({ (display.x - size.x) * 0.5f, (display.y - size.y) * 0.5f });
+	}
+
 	ImVec2 curPos  = FUCK::GetWindowPos();
 	ImVec2 curSize = FUCK::GetWindowSize();
 
@@ -503,22 +447,21 @@ void DemoOverlay::Draw()
 	FUCK::Header("$DEMO_Section_WindowFlags"_T);
 	FUCK::Text("$DEMO_WindowFlags_Desc"_T);
 
-	bool flagsChanged = false;
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_Blur"_T, &cfg.reqBlur, false, false);
+	// Session only, so the overlay starts plain each time
+	FUCK::Checkbox("$DEMO_Flag_Blur"_T, &cfg.reqBlur, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_Blur"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_HideHUD"_T, &cfg.reqHideHUD, false, false);
+	FUCK::Checkbox("$DEMO_Flag_HideHUD"_T, &cfg.reqHideHUD, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_HideHUD"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_PauseHard"_T, &cfg.reqPauseHard, false, false);
+	FUCK::Checkbox("$DEMO_Flag_PauseHard"_T, &cfg.reqPauseHard, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_PauseHard"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_PauseSoft"_T, &cfg.reqPauseSoft, false, false);
+	FUCK::Checkbox("$DEMO_Flag_PauseSoft"_T, &cfg.reqPauseSoft, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_PauseSoft"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_CloseOnEsc"_T, &cfg.reqCloseOnEsc, false, false);
+	FUCK::Checkbox("$DEMO_Flag_CloseOnEsc"_T, &cfg.reqCloseOnEsc, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_CloseOnEsc"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_CloseOnMenu"_T, &cfg.reqCloseOnMenu, false, false);
+	FUCK::Checkbox("$DEMO_Flag_CloseOnMenu"_T, &cfg.reqCloseOnMenu, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_CloseOnMenu"_T);
 
 	if (FUCK::Checkbox("$DEMO_Flag_PassInput"_T, &cfg.reqPassInput, false, false)) {
-		flagsChanged = true;
 		if (cfg.reqPassInput) {
 			FUCK::SetMenuOpen(false);
 			std::thread([this]() {
@@ -528,33 +471,22 @@ void DemoOverlay::Draw()
 		}
 	}
 	FUCK::SetTooltip("$DEMO_PassInputTip"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_BlockVanity"_T, &cfg.reqBlockVanity, false, false);
+	FUCK::Checkbox("$DEMO_Flag_BlockVanity"_T, &cfg.reqBlockVanity, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_BlockVanity"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_NoBackground"_T, &cfg.reqNoBackground, false, false);
+	FUCK::Checkbox("$DEMO_Flag_NoBackground"_T, &cfg.reqNoBackground, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_NoBackground"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_NoDecoration"_T, &cfg.reqNoDecoration, false, false);
+	FUCK::Checkbox("$DEMO_Flag_NoDecoration"_T, &cfg.reqNoDecoration, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_NoDecoration"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_ExtendBorder"_T, &cfg.reqExtendBorder, false, false);
+	FUCK::Checkbox("$DEMO_Flag_ExtendBorder"_T, &cfg.reqExtendBorder, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_ExtendBorder"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_RenderDuringTM"_T, &cfg.reqRenderDuringTM, false, false);
+	FUCK::Checkbox("$DEMO_Flag_RenderDuringTM"_T, &cfg.reqRenderDuringTM, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_RenderDuringTM"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_IgnoreUserScale"_T, &cfg.reqIgnoreUserScale, false, false);
+	FUCK::Checkbox("$DEMO_Flag_IgnoreUserScale"_T, &cfg.reqIgnoreUserScale, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_IgnoreUserScale"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_CustomPosition"_T, &cfg.reqCustomPosition, false, false);
+	FUCK::Checkbox("$DEMO_Flag_CustomPosition"_T, &cfg.reqCustomPosition, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_CustomPosition"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_CloseOnClickOut"_T, &cfg.reqCloseOnClickOut, false, false);
+	FUCK::Checkbox("$DEMO_Flag_CloseOnClickOut"_T, &cfg.reqCloseOnClickOut, false, false);
 	FUCK::SetTooltip("$DEMO_FlagTip_CloseOnClickOut"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_Editable"_T, &cfg.reqEditable, false, false);
-	FUCK::SetTooltip("$DEMO_FlagTip_Editable"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_Scalable"_T, &cfg.reqScalable, false, false);
-	FUCK::SetTooltip("$DEMO_FlagTip_Scalable"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_AnchorRight"_T, &cfg.reqAnchorRight, false, false);
-	FUCK::SetTooltip("$DEMO_FlagTip_AnchorRight"_T);
-	flagsChanged |= FUCK::Checkbox("$DEMO_Flag_Rotatable"_T, &cfg.reqRotatable, false, false);
-	FUCK::SetTooltip("$DEMO_FlagTip_Rotatable"_T);
-
-	if (flagsChanged)
-		DemoState::GetSingleton()->SaveSettings();
 
 	FUCK::SeparatorThick();
 

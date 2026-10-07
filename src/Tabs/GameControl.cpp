@@ -15,34 +15,6 @@ void DemoState::DrawGameControlTab()
 	FUCK::Spacing();
 	FUCK::Separator();
 
-	FUCK::Header("$DEMO_Section_HUDWidget"_T);
-	auto& hudWidget = DemoState::GetSingleton()->_hudWidget;
-
-	if (FUCK::Button(hudWidget._isOpen ? "$DEMO_CloseHUDWidget"_T : "$DEMO_OpenHUDWidget"_T)) {
-		hudWidget._wantOpen = !hudWidget._isOpen;
-		hudWidget.SetOpen(!hudWidget._isOpen);
-	}
-
-	if (hudWidget._isOpen) {
-		FUCK::Spacing();
-		if (FUCK::Checkbox("$DEMO_KeepHudOpen"_T, &_cfg.hudKeepOpen, false, false)) {
-			DemoState::GetSingleton()->SaveSettings();
-		}
-		FUCK::SetTooltip("$DEMO_KeepHudOpenTip"_T);
-
-		FUCK::SliderFloat("$DEMO_HudScale"_T, &_cfg.hudScale, 0.1f, 3.0f, "%.2f");
-		if (FUCK::IsItemDeactivatedAfterEdit()) {
-			DemoState::GetSingleton()->SaveSettings();
-		}
-
-		FUCK::Spacing();
-	}
-
-	FUCK::TextWrapped("$DEMO_HUDWidgetDesc"_T);
-
-	FUCK::Spacing();
-	FUCK::Separator();
-
 	FUCK::Header("$DEMO_Section_Utils"_T);
 
 	std::string demoDir = GetSettings().GetConfigDirectory();

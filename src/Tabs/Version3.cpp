@@ -1,11 +1,7 @@
 #include "DEMO.h"
 
-void DemoState::DrawVers3Tab()
+void DemoState::DrawVers3Page()
 {
-	if (!FUCK::BeginTabItem("$DEMO_TabVers3"_T)) {
-		return;
-	}
-
 	FUCK::Header("$DEMO_HotkeyAPI"_T);
 	bool hotkeyEnabled = FUCK::IsHotkeyEnabled();
 	if (_disableHotkey && hotkeyEnabled)
@@ -134,6 +130,4 @@ void DemoState::DrawVers3Tab()
 		// Draw over EVERYTHING directly to the background layer tracking the mouse
 		FUCK::DrawScreenCircle(mp, FUCK::Scale(20.0f), IM_COL32(255, 0, 255, 255), 0, 3.0f);
 	}
-
-	FUCK::EndTabItem();
 }

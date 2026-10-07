@@ -1,11 +1,7 @@
 #include "DEMO.h"
 
-void DemoState::DrawVers2Tab()
+void DemoState::DrawVers2Page()
 {
-	if (!FUCK::BeginTabItem("$DEMO_TabVers2"_T)) {
-		return;
-	}
-
 	FUCK::Header("$DEMO_Multiline"_T);
 	FUCK::InputTextMultiline("##Multiline", &_multilineBuffer, ImVec2(0, FUCK::Scale(100.0f)));
 
@@ -64,6 +60,4 @@ void DemoState::DrawVers2Tab()
 		FUCK::Text("$DEMO_ItemX"_T, i, i == 25 ? " <--" : "");
 	}
 	FUCK::EndChild();
-
-	FUCK::EndTabItem();
 }

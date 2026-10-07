@@ -106,7 +106,7 @@ public:
 		std::int32_t dragInt          = 10;
 		char         inputBuffer[256] = { 0 };
 
-		// Overlays
+		// Overlay flags, session only
 		bool reqBlur            = false;
 		bool reqHideHUD         = false;
 		bool reqPauseHard       = false;
@@ -122,15 +122,14 @@ public:
 		bool reqIgnoreUserScale = false;
 		bool reqCustomPosition  = false;
 		bool reqCloseOnClickOut = false;
-		bool reqEditable        = false;
-		bool reqScalable        = false;
-		bool reqAnchorRight     = false;
-		bool reqRotatable       = false;
 
 		bool secondPassInput = false;
-		bool hudKeepOpen     = false;
 
-		float hudScale = 1.0f;
+		// HUD widget flags, session only
+		bool hudKeepOpen    = false;
+		bool hudScalable    = false;
+		bool hudAnchorRight = false;
+		bool hudRotatable   = false;
 
 		// Rendering Overlays Demo
 		bool                 showOverlay      = false;
@@ -170,47 +169,63 @@ public:
 
 	DemoOverlay* GetOverlay() { return &_overlay; }
 
-	// Basic Tool
+	// ==================================================
+	// Sidebar Tools & Groups
+	// ==================================================
+
+	// A tool's Group() is its sidebar group. A group exists once a tool names it, and tools naming the same one share it.
+	//   nullptr               top level, no group
+	//   "Camera"              a group called Camera
+	//   "Camera::Presets"     Presets, inside Camera. Up to 4 levels deep
+	//
+	// The top level is alphabetical. Inside a group, things follow registration order (see DemoState's constructor).
+	// If a tool's name or group changes at runtime, call FUCK::RefreshTools(). The user can rearrange it all in Settings.
+	//
+	// The demo builds this tree:
+	//   DEMO - API General
+	//   ├ General Demo
+	//   ├ Visuals
+	//   ├ System
+	//   └ API Updates
+	//     ├ Version 2/3
+	//     │ ├ Version 2
+	//     │ └ Version 3
+	//     └ Version 4/5/6
+	//       ├ Version 4
+	//       ├ Version 5
+	//       └ Version 6
+
+	// Basic Tool, in the General group. A single level can be returned as it is
 	class ToolGeneral : public FUCK::ITool
 	{
 	public:
 		const char* Name() const override { return "$DEMO_Tool_General"_T; }
-		const char* Group() const override { return "$DEMO_Group_General"_T; }  // Grouped
+		const char* Group() const override { return "$DEMO_Group_General"_T; }
 		void        Draw() override;
+		// Every tool's RenderOverlay() runs each frame, open or not, so only this one draws the demo's overlays.
+		// It's only called while the host is drawing. To keep an overlay up with the menu closed, draw it from an open window
 		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 		void        OnOpen() override { DemoState::GetSingleton()->OnOpen(); }
 		void        OnClose() override { DemoState::GetSingleton()->OnClose(); }
 		bool        OnAsyncInput(const void* e) override { return DemoState::GetSingleton()->OnAsyncInput(e); }
 	};
 
-	// Visuals Tool
+	// Visuals Tool, in the General group
 	class ToolVisuals : public FUCK::ITool
 	{
 	public:
 		const char* Name() const override { return "$DEMO_Tool_Visuals"_T; }
-		const char* Group() const override { return "$DEMO_Group_General"_T; }  // Grouped
+		const char* Group() const override { return "$DEMO_Group_General"_T; }
 		void        Draw() override;
-		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 	};
 
-	// System Tool
+	// System Tool, in the General group
 	class ToolSystem : public FUCK::ITool
 	{
 	public:
 		const char* Name() const override { return "$DEMO_Tool_System"_T; }
-		const char* Group() const override { return "$DEMO_Group_General"_T; } // Grouped
+		const char* Group() const override { return "$DEMO_Group_General"_T; }
 		void        Draw() override;
-		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
-	};
-
-	// API Updates Tool
-	class ToolAPIUpdates : public FUCK::ITool
-	{
-	public:
-		const char* Name() const override { return "$DEMO_Tool_APIUpdates"_T; }
-		const char* Group() const override { return nullptr; }  // Top level
-		void        Draw() override;
-		void        RenderOverlay() override { DemoState::GetSingleton()->DrawOverlays(); }
 	};
 
 	DemoConfig         _cfg;
@@ -230,9 +245,11 @@ private:
 	void DrawTablesTab();
 	void DrawGameControlTab();
 	void DrawIconsTab();
-	void DrawVers2Tab();
-	void DrawVers3Tab();
-	void DrawVers456Tab();
+	void DrawVers2Page();
+	void DrawVers3Page();
+	void DrawVers4Page();
+	void DrawVers5Page();
+	void DrawVers6Page();
 
 	// Feature Demos
 	std::string _multilineBuffer = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5";
@@ -284,8 +301,19 @@ private:
 	HudWidget     _hudWidget;
 
 	// Tool Instances
-	ToolGeneral    _toolGeneral;
-	ToolVisuals    _toolVisuals;
-	ToolSystem     _toolSystem;
-	ToolAPIUpdates _toolAPIUpdates;
+	ToolGeneral _toolGeneral;
+	ToolVisuals _toolVisuals;
+	ToolSystem  _toolSystem;
+
+	// The API Updates pages need only a name, a group and a page to draw, so each is a FUCK::SimpleTool rather than a
+	// class of its own. Their groups are two levels down, General > API Updates > Version 2/3, joined from translated
+	// names with "::". Declared before the tools, so they're built first
+	const std::string _groupV2to3 = std::format("{}::{}::{}", "$DEMO_Group_General"_T, "$DEMO_Group_APIUpdates"_T, "$DEMO_Group_APIv2to3"_T);
+	const std::string _groupV4to6 = std::format("{}::{}::{}", "$DEMO_Group_General"_T, "$DEMO_Group_APIUpdates"_T, "$DEMO_Group_APIv4to6"_T);
+
+	FUCK::SimpleTool _toolAPIv2{ "$DEMO_Tool_APIv2"_T, _groupV2to3, [this] { DrawVers2Page(); } };
+	FUCK::SimpleTool _toolAPIv3{ "$DEMO_Tool_APIv3"_T, _groupV2to3, [this] { DrawVers3Page(); } };
+	FUCK::SimpleTool _toolAPIv4{ "$DEMO_Tool_APIv4"_T, _groupV4to6, [this] { DrawVers4Page(); } };
+	FUCK::SimpleTool _toolAPIv5{ "$DEMO_Tool_APIv5"_T, _groupV4to6, [this] { DrawVers5Page(); } };
+	FUCK::SimpleTool _toolAPIv6{ "$DEMO_Tool_APIv6"_T, _groupV4to6, [this] { DrawVers6Page(); } };
 };
