@@ -7,12 +7,10 @@ void DemoState::DrawVers2Tab()
 	}
 
 	FUCK::Header("$DEMO_Multiline"_T);
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
 	FUCK::InputTextMultiline("##Multiline", &_multilineBuffer, ImVec2(0, FUCK::Scale(100.0f)));
 
 	FUCK::Separator();
 	FUCK::Header("$DEMO_ItemWidth"_T);
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
 
 	FUCK::PushItemWidth(FUCK::Scale(150.0f));
 	static float v1 = 0.5f, v2 = 0.5f;
@@ -38,9 +36,8 @@ void DemoState::DrawVers2Tab()
 
 	FUCK::Separator();
 	FUCK::Header("$DEMO_Tooltips"_T);
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
 
-	FUCK::Button("$DEMO_HoverMe"_T);
+	FUCK::Button("$DEMO_HoverMeTooltip"_T);
 	if (FUCK::IsItemHovered() && FUCK::BeginTooltip()) {
 		FUCK::TextColoredWrapped(ImVec4(1.0f, 0.85f, 0.2f, 1.0f), "$DEMO_TooltipText"_T);
 		FUCK::Spacing();
@@ -50,7 +47,6 @@ void DemoState::DrawVers2Tab()
 
 	FUCK::Separator();
 	FUCK::Header("$DEMO_Scroll"_T);
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
 
 	static bool scrollNext = false;
 	if (FUCK::Button("$DEMO_ScrollTo25"_T)) {

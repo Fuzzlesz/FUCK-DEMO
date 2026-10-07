@@ -25,7 +25,6 @@ void DemoState::DrawVers3Tab()
 
 	FUCK::Separator();
 	FUCK::Header("$DEMO_TreeNodeEx"_T);
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
 
 	static bool optSelected    = false;
 	static bool optLeaf        = false;
@@ -70,7 +69,6 @@ void DemoState::DrawVers3Tab()
 
 	FUCK::Separator();
 	FUCK::Header("$DEMO_Popups"_T);
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
 
 	if (FUCK::Button("$DEMO_OpenNormal"_T)) {
 		FUCK::OpenPopup("NormalPopup");
@@ -103,7 +101,6 @@ void DemoState::DrawVers3Tab()
 
 	FUCK::Separator();
 	FUCK::Header("$DEMO_TextWrap"_T);
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
 
 	FUCK::PushTextWrapPos(FUCK::Scale(300.0f));
 	FUCK::TextColored(ImVec4(1.0f, 0.5f, 0.8f, 1.0f), "$DEMO_TextWrapDesc"_T);
@@ -111,7 +108,6 @@ void DemoState::DrawVers3Tab()
 
 	FUCK::Separator();
 	FUCK::Header("$DEMO_Shapes"_T);
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
 
 	ImVec2 p  = FUCK::GetCursorScreenPos();
 	float  sz = FUCK::Scale(40.0f);
