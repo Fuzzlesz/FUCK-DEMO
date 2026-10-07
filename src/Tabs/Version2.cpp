@@ -18,10 +18,23 @@ void DemoState::DrawVers2Tab()
 	static float v1 = 0.5f, v2 = 0.5f;
 	FUCK::SliderFloat("##v1", &v1, 0.0f, 1.0f);
 	FUCK::SameLine();
-	FUCK::SeparatorVertical();
-	FUCK::SameLine();
 	FUCK::SliderFloat("##v2", &v2, 0.0f, 1.0f);
 	FUCK::PopItemWidth();
+
+	FUCK::Spacing();
+	FUCK::TextWrapped("$DEMO_VerticalSeparatorText"_T);
+	FUCK::Spacing();
+
+	// Mini Toolbar Demo
+	FUCK::Button("Cut");
+	FUCK::SameLine();
+	FUCK::SeparatorVertical();
+	FUCK::SameLine();
+	FUCK::Button("Copy");
+	FUCK::SameLine();
+	FUCK::SeparatorVertical();
+	FUCK::SameLine();
+	FUCK::Button("Paste");
 
 	FUCK::Separator();
 	FUCK::Header("$DEMO_Tooltips"_T);
