@@ -101,26 +101,6 @@ void DemoState::DrawVers3Tab()
 	FUCK::PopTextWrapPos();
 
 	FUCK::Separator();
-	FUCK::Header("$DEMO_NavCursor"_T);
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
-
-	if (FUCK::Button("$DEMO_FocusInput"_T)) {
-		FUCK::SetKeyboardFocusHere(0);
-	}
-	FUCK::SameLine();
-	static char buf[32] = "";
-	FUCK::InputText("##focusTest", buf, 32);
-
-	// Spacer to prevent the input field from overlapping with the Nav toggle button
-	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
-
-	static bool navVisible = false;
-	if (FUCK::Button("$DEMO_ToggleNav"_T)) {
-		navVisible = !navVisible;
-		FUCK::SetNavCursorVisible(navVisible);
-	}
-
-	FUCK::Separator();
 	FUCK::Header("$DEMO_Shapes"_T);
 	FUCK::Dummy(ImVec2(0.0f, FUCK::Scale(4.0f)));
 
