@@ -64,4 +64,5 @@ using StringMap = ankerl::unordered_dense::map<std::string, D, string_hash, std:
 
 #define FUCK_API_ENABLE_SIMPLEINI
 #include "API/FUCK_API.h"
+#include "API/FUCK_ColorPalette.h"
 #include "Version.h"

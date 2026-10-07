@@ -107,17 +107,25 @@ public:
 		char         inputBuffer[256] = { 0 };
 
 		// Overlays
-		bool reqBlur         = false;
-		bool reqHideHUD      = false;
-		bool reqPauseHard    = false;
-		bool reqPauseSoft    = false;
-		bool reqCloseOnEsc   = false;
-		bool reqCloseOnMenu  = false;
-		bool reqPassInput    = false;
-		bool reqBlockVanity  = false;
-		bool reqNoBackground = false;
-		bool reqNoDecoration = false;
-		bool reqExtendBorder = false;
+		bool reqBlur            = false;
+		bool reqHideHUD         = false;
+		bool reqPauseHard       = false;
+		bool reqPauseSoft       = false;
+		bool reqCloseOnEsc      = false;
+		bool reqCloseOnMenu     = false;
+		bool reqPassInput       = false;
+		bool reqBlockVanity     = false;
+		bool reqNoBackground    = false;
+		bool reqNoDecoration    = false;
+		bool reqExtendBorder    = false;
+		bool reqRenderDuringTM  = false;
+		bool reqIgnoreUserScale = false;
+		bool reqCustomPosition  = false;
+		bool reqCloseOnClickOut = false;
+		bool reqEditable        = false;
+		bool reqScalable        = false;
+		bool reqAnchorRight     = false;
+		bool reqRotatable       = false;
 
 		bool secondPassInput = false;
 		bool hudKeepOpen     = false;
@@ -224,6 +232,7 @@ private:
 	void DrawIconsTab();
 	void DrawVers2Tab();
 	void DrawVers3Tab();
+	void DrawVers456Tab();
 
 	// Feature Demos
 	std::string _multilineBuffer = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5";

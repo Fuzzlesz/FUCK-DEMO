@@ -11,5 +11,6 @@ set(sources ${sources}
 	src/Tabs/Tables.cpp
 	src/Tabs/Version2.cpp
 	src/Tabs/Version3.cpp
+	src/Tabs/Version456.cpp
 	src/main.cpp
 )
