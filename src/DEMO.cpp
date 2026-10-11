@@ -303,8 +303,9 @@ FUCK::WindowFlags HudWidget::GetFlags() const
 		flags = flags | FUCK::WindowFlags::kPassInputToGame;
 	}
 
+	// Hides with game menus, and with the game's own HUD (the intro, cutscenes, dialogue), unless asked to stay
 	if (!cfg.hudKeepOpen)
-		flags = flags | FUCK::WindowFlags::kCloseOnGameMenu;
+		flags = flags | FUCK::WindowFlags::kCloseOnGameMenu | FUCK::WindowFlags::kHideWithHUD;
 
 	// The host moves and saves it while the FUCK menu is open. The other edit flags build on this one
 	flags = flags | FUCK::WindowFlags::kEditable;
