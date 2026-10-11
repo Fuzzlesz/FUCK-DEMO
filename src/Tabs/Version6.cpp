@@ -1,4 +1,6 @@
 #include "DEMO.h"
+
+#include "API/FUCK_ColorPalette.h"
 #include "API/IconsFontAwesome6.h"
 
 void DemoState::DrawVers6Page()
