@@ -14,5 +14,6 @@ set(sources ${sources}
 	src/Tabs/Version4.cpp
 	src/Tabs/Version5.cpp
 	src/Tabs/Version6.cpp
+	src/Tabs/Version78.cpp
 	src/main.cpp
 )

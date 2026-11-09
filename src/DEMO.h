@@ -187,13 +187,14 @@ public:
 	//   ├ Visuals
 	//   ├ System
 	//   └ API Updates
-	//     ├ Version 2/3
+	//     ├ Version 2/3/4
 	//     │ ├ Version 2
-	//     │ └ Version 3
-	//     └ Version 4/5/6
-	//       ├ Version 4
+	//     │ ├ Version 3
+	//     │ └ Version 4
+	//     └ Version 5/6/7/8
 	//       ├ Version 5
-	//       └ Version 6
+	//       ├ Version 6
+	//       └ Version 7/8
 
 	// Basic Tool, in the General group. A single level can be returned as it is
 	class ToolGeneral : public FUCK::ITool
@@ -214,7 +215,7 @@ public:
 	class ToolVisuals : public FUCK::ITool
 	{
 	public:
-		const char* Name() const override { return "$DEMO_Tool_Visuals"_T; }
+		const char* Name() const override  { return "$DEMO_Tool_Visuals"_T; }
 		const char* Group() const override { return "$DEMO_Group_General"_T; }
 		void        Draw() override;
 	};
@@ -223,7 +224,7 @@ public:
 	class ToolSystem : public FUCK::ITool
 	{
 	public:
-		const char* Name() const override { return "$DEMO_Tool_System"_T; }
+		const char* Name() const override  { return "$DEMO_Tool_System"_T; }
 		const char* Group() const override { return "$DEMO_Group_General"_T; }
 		void        Draw() override;
 	};
@@ -250,6 +251,7 @@ private:
 	void DrawVers4Page();
 	void DrawVers5Page();
 	void DrawVers6Page();
+	void DrawVers78Page();
 
 	// Feature Demos
 	std::string _multilineBuffer = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5";
@@ -306,14 +308,15 @@ private:
 	ToolSystem  _toolSystem;
 
 	// The API Updates pages need only a name, a group and a page to draw, so each is a FUCK::SimpleTool rather than a
-	// class of its own. Their groups are two levels down, General > API Updates > Version 2/3, joined from translated
+	// class of its own. Their groups are two levels down, General > API Updates > Version 2/3/4, joined from translated
 	// names with "::". Declared before the tools, so they're built first
-	const std::string _groupV2to3 = std::format("{}::{}::{}", "$DEMO_Group_General"_T, "$DEMO_Group_APIUpdates"_T, "$DEMO_Group_APIv2to3"_T);
-	const std::string _groupV4to6 = std::format("{}::{}::{}", "$DEMO_Group_General"_T, "$DEMO_Group_APIUpdates"_T, "$DEMO_Group_APIv4to6"_T);
+	const std::string _groupV2to4 = std::format("{}::{}::{}", "$DEMO_Group_General"_T, "$DEMO_Group_APIUpdates"_T, "$DEMO_Group_APIv2to4"_T);
+	const std::string _groupV5to8 = std::format("{}::{}::{}", "$DEMO_Group_General"_T, "$DEMO_Group_APIUpdates"_T, "$DEMO_Group_APIv5to8"_T);
 
-	FUCK::SimpleTool _toolAPIv2{ "$DEMO_Tool_APIv2"_T, _groupV2to3, [this] { DrawVers2Page(); } };
-	FUCK::SimpleTool _toolAPIv3{ "$DEMO_Tool_APIv3"_T, _groupV2to3, [this] { DrawVers3Page(); } };
-	FUCK::SimpleTool _toolAPIv4{ "$DEMO_Tool_APIv4"_T, _groupV4to6, [this] { DrawVers4Page(); } };
-	FUCK::SimpleTool _toolAPIv5{ "$DEMO_Tool_APIv5"_T, _groupV4to6, [this] { DrawVers5Page(); } };
-	FUCK::SimpleTool _toolAPIv6{ "$DEMO_Tool_APIv6"_T, _groupV4to6, [this] { DrawVers6Page(); } };
+	FUCK::SimpleTool _toolAPIv2   { "$DEMO_Tool_APIv2"_T,    _groupV2to4, [this] { DrawVers2Page(); } };
+	FUCK::SimpleTool _toolAPIv3   { "$DEMO_Tool_APIv3"_T,    _groupV2to4, [this] { DrawVers3Page(); } };
+	FUCK::SimpleTool _toolAPIv4   { "$DEMO_Tool_APIv4"_T,    _groupV2to4, [this] { DrawVers4Page(); } };
+	FUCK::SimpleTool _toolAPIv5   { "$DEMO_Tool_APIv5"_T,    _groupV5to8, [this] { DrawVers5Page(); } };
+	FUCK::SimpleTool _toolAPIv6   { "$DEMO_Tool_APIv6"_T,    _groupV5to8, [this] { DrawVers6Page(); } };
+	FUCK::SimpleTool _toolAPIv7to8{ "$DEMO_Tool_APIv7to8"_T, _groupV5to8, [this] { DrawVers78Page(); } };
 };

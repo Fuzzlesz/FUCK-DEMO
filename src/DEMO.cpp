@@ -20,7 +20,7 @@ DemoState::DemoState()
 
 	// Register Split Tools. Inside a group they show in the order they're registered, and a nested group sits where
 	// its first tool is. So API Updates, whose pages come last, sits below General, Visuals and System, and
-	// Version 2/3 sits above Version 4/5/6. See "Sidebar Tools & Groups" in DEMO.h
+	// the version groups follow in order. See "Sidebar Tools & Groups" in DEMO.h
 	FUCK::RegisterTool(&_toolGeneral);
 	FUCK::RegisterTool(&_toolVisuals);
 	FUCK::RegisterTool(&_toolSystem);
@@ -29,6 +29,7 @@ DemoState::DemoState()
 	FUCK::RegisterTool(&_toolAPIv4);
 	FUCK::RegisterTool(&_toolAPIv5);
 	FUCK::RegisterTool(&_toolAPIv6);
+	FUCK::RegisterTool(&_toolAPIv7to8);
 
 	LoadSettings();
 }

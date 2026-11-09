@@ -8,11 +8,15 @@ void DemoState::DrawVers2Page()
 	FUCK::Separator();
 	FUCK::Header("$DEMO_ItemWidth"_T);
 
-	FUCK::PushItemWidth(FUCK::Scale(150.0f));
-	static float v1 = 0.5f, v2 = 0.5f;
-	FUCK::SliderFloat("##v1", &v1, 0.0f, 1.0f);
+	// A width pushed for a run of widgets holds for each of them, so they can share a line. Here a third each, less the gaps between
+	static float colour[3] = { 0.8f, 0.5f, 0.2f };
+	const float  gap       = FUCK::GetStyleVarVec(ImGuiStyleVar_ItemSpacing).x;
+	FUCK::PushItemWidth((FUCK::GetContentRegionAvail().x - gap * 2.0f) / 3.0f);
+	FUCK::SliderFloat("##Red", &colour[0], 0.0f, 1.0f, "R %.2f");
 	FUCK::SameLine();
-	FUCK::SliderFloat("##v2", &v2, 0.0f, 1.0f);
+	FUCK::SliderFloat("##Green", &colour[1], 0.0f, 1.0f, "G %.2f");
+	FUCK::SameLine();
+	FUCK::SliderFloat("##Blue", &colour[2], 0.0f, 1.0f, "B %.2f");
 	FUCK::PopItemWidth();
 
 	FUCK::Spacing();
